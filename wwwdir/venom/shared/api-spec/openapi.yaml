@@ -1,0 +1,534 @@
+openapi: 3.0.3
+info:
+  title: Api
+  description: VENOM CODES API specification — WHMCS-backed client portal
+  version: 0.1.0
+servers:
+  - url: /
+paths:
+  /api/healthz:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current session
+      operationId: logout
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new client account
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated client info
+      operationId: getMe
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProfile"
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh JWT
+      operationId: refreshToken
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /api/client/profile:
+    get:
+      tags: [Client]
+      summary: Get client profile
+      operationId: getClientProfile
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProfile"
+    put:
+      tags: [Client]
+      summary: Update client profile
+      operationId: updateClientProfile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProfile"
+  /api/client/contacts:
+    get:
+      tags: [Client]
+      summary: List contacts
+      operationId: listContacts
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      tags: [Client]
+      summary: Add contact
+      operationId: addContact
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Created
+  /api/client/contacts/{contactId}:
+    put:
+      tags: [Client]
+      summary: Update contact
+      operationId: updateContact
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags: [Client]
+      summary: Delete contact
+      operationId: deleteContact
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/client/change-password:
+    post:
+      tags: [Client]
+      summary: Change password
+      operationId: changePassword
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: OK
+  /api/client/email-preferences:
+    get:
+      tags: [Client]
+      summary: Get email preferences
+      operationId: getEmailPreferences
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailPreferences"
+    put:
+      tags: [Client]
+      summary: Update email preferences
+      operationId: updateEmailPreferences
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailPreferences"
+      responses:
+        "200":
+          description: OK
+  /api/client/credits:
+    get:
+      tags: [Client]
+      summary: Client credit balance
+      operationId: getClientCredits
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/client/dashboard:
+    get:
+      tags: [Client]
+      summary: Dashboard summary
+      operationId: getDashboardSummary
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /api/services:
+    get:
+      tags: [Services]
+      summary: List services
+      operationId: listServices
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/services/{serviceId}:
+    get:
+      tags: [Services]
+      summary: Get service
+      operationId: getService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/invoices:
+    get:
+      tags: [Billing]
+      summary: List invoices
+      operationId: listInvoices
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/invoices/{invoiceId}:
+    get:
+      tags: [Billing]
+      summary: Get invoice
+      operationId: getInvoice
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/tickets:
+    get:
+      tags: [Support]
+      summary: List tickets
+      operationId: listTickets
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+    post:
+      tags: [Support]
+      summary: Open ticket
+      operationId: createTicket
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTicketRequest"
+      responses:
+        "201":
+          description: Created
+  /api/tickets/departments:
+    get:
+      tags: [Support]
+      summary: Ticket departments
+      operationId: getTicketDepartments
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/domains:
+    get:
+      tags: [Domains]
+      summary: List domains
+      operationId: listDomains
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/domains/whois:
+    get:
+      tags: [Domains]
+      summary: WHOIS lookup
+      operationId: whoisLookup
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/products:
+    get:
+      tags: [Catalog]
+      summary: Product catalog
+      operationId: listProducts
+      responses:
+        "200":
+          description: OK
+  /api/cart:
+    get:
+      tags: [Cart]
+      summary: Get cart
+      operationId: getCart
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/announcements:
+    get:
+      tags: [Public]
+      summary: Announcements
+      operationId: listAnnouncements
+      responses:
+        "200":
+          description: OK
+  /api/knowledgebase:
+    get:
+      tags: [Public]
+      summary: KB index
+      operationId: getKnowledgebaseIndex
+      responses:
+        "200":
+          description: OK
+  /api/knowledgebase/search:
+    get:
+      tags: [Public]
+      summary: Search KB
+      operationId: searchKnowledgebase
+      responses:
+        "200":
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RegisterRequest:
+      type: object
+      required: [firstname, lastname, email, password]
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+    AuthResponse:
+      type: object
+      required: [token, client]
+      properties:
+        token:
+          type: string
+        client:
+          $ref: "#/components/schemas/ClientProfile"
+    ClientProfile:
+      type: object
+      required: [id, firstname, lastname, email, status]
+      properties:
+        id:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+    UpdateClientRequest:
+      type: object
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+    Contact:
+      type: object
+    ContactInput:
+      type: object
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    EmailPreferences:
+      type: object
+    DashboardSummary:
+      type: object
+    CreateTicketRequest:
+      type: object

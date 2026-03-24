@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "folder-organization": {
+      "source": "delphine-l/claude_global",
+      "sourceType": "github",
+      "computedHash": "53861ab5d1b207c5a3092d94d671374770f151be5a2fd86032749aefdcfc36d2"
+    }
+  }
+}

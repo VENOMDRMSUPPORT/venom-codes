@@ -1,0 +1,100 @@
+# Keep this home-folder repo focused on project code, not user profile/caches.
+
+# Ignore everything by default in /home/venom
+*
+
+# Keep Git metadata and this file
+!.gitignore
+
+# Keep selected project folders
+!backend/
+!backend/**
+!bin/
+!bin/**
+!data/
+!data/**
+!docs/
+!docs/**
+!frontend/
+!frontend/**
+!logs/
+!logs/**
+!nginx/
+!nginx/**
+!php/
+!php/**
+# src/ - no root-level src folder in this repo
+src/php84-build/
+!temp/
+!temp/**
+!wwwdir/
+!wwwdir/**
+
+# Keep workspace file
+!venom.code-workspace
+
+# Common generated files inside tracked directories
+**/.DS_Store
+**/Thumbs.db
+**/*~
+**/*.bak
+**/*.tmp
+**/*.swp
+**/*.swo
+**/__pycache__/
+**/*.py[cod]
+**/node_modules/
+**/dist/
+**/build/
+**/out/
+
+# Large dependency/runtime trees that should not be versioned
+bin/**
+php/include/**
+php/lib/**
+php/php/**
+php/var/**
+wwwdir/vendor/**
+wwwdir/**/vendor/**
+wwwdir/phpmyadmin/**
+wwwdir/templates_c/**
+wwwdir/downloads/**
+wwwdir/attachments/**
+wwwdir/status/**
+wwwdir/oauth/**
+wwwdir/**/node_modules/**
+wwwdir/**/cache/**
+wwwdir/**/tmp/**
+
+# Secrets and local cert material
+nginx/certs/*.key
+nginx/certs/*.crt
+nginx/certs/*.csr
+nginx/certs/*.pem
+nginx/certs/*.p12
+nginx/certs/*.pfx
+
+# Common binary/artifact extensions
+**/*.so
+**/*.a
+**/*.o
+**/*.dll
+**/*.dylib
+**/*.exe
+**/*.phar
+wwwdir/phpmyadmin/
+data/cache/*
+!data/cache/.gitkeep
+data/cache/phpmyadmin/
+
+# Runtime/session/log artifacts
+logs/**
+!logs/.gitkeep
+data/runtime/**
+!data/runtime/.gitkeep
+data/**/sessions/**
+**/*.log
+**/*.log.*
+
+# PHP language server cache
+intelephense/

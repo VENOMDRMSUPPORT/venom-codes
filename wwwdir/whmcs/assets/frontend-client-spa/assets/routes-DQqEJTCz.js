@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/Page-Ce_WUIKR.js","assets/UText.vue_vue_type_script_setup_true_lang-kbwj3BJo.js","assets/index-D553CgCz.js","assets/index-CuIemRen.css","assets/CartTotals.vue_vue_type_script_setup_true_lang-CIMRUYJD.js"])))=>i.map(i=>d[i]);
+import{_ as t}from"./index-D553CgCz.js";const r=[{path:"cart",name:"Cart",component:()=>t(()=>import("./Page-Ce_WUIKR.js"),__vite__mapDeps([0,1,2,3,4]))}];export{r as default};
