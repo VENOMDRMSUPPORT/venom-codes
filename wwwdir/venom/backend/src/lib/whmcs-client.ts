@@ -11,9 +11,10 @@ export class WhmcsApiError extends Error {
   }
 }
 
+// Allow string arrays as they'll be joined when making the API call
 export type WhmcsParams = Record<
   string,
-  string | number | boolean | undefined
+  string | number | boolean | undefined | string[]
 >;
 
 /**

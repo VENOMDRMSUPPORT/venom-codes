@@ -14,6 +14,18 @@ import cartRouter from "../backend/src/routes/cart.routes.js";
 import announcementsRouter from "../backend/src/routes/announcements.routes.js";
 import knowledgebaseRouter from "../backend/src/routes/knowledgebase.routes.js";
 import paymethodsRouter from "../backend/src/routes/paymethods.routes.js";
+import billingRouter from "../backend/src/routes/billing.routes.js";
+import promotionsRouter from "../backend/src/routes/promotions.routes.js";
+import affiliatesRouter from "../backend/src/routes/affiliates.routes.js";
+import adminRouter from "../backend/src/routes/admin.routes.js";
+import usersRouter from "../backend/src/routes/users.routes.js";
+import todoRouter from "../backend/src/routes/todo.routes.js";
+import projectsRouter from "../backend/src/routes/projects.routes.js";
+import oauthRouter from "../backend/src/routes/oauth.routes.js";
+import notificationsRouter from "../backend/src/routes/notifications.routes.js";
+import sslRouter from "../backend/src/routes/ssl.routes.js";
+import modulesRouter from "../backend/src/routes/modules.routes.js";
+import systemRouter from "../backend/src/routes/system.routes.js";
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -41,4 +53,16 @@ export function registerApiRoutes(app: Express): void {
   app.use("/api/announcements", announcementsRouter);
   app.use("/api/knowledgebase", knowledgebaseRouter);
   app.use("/api/paymethods", paymethodsRouter);
+  app.use("/api/billing", billingRouter);
+  app.use("/api/promotions", promotionsRouter);
+  app.use("/api/affiliates", affiliatesRouter);
+  app.use("/api/admin", adminRouter);
+  app.use("/api/users", usersRouter);
+  app.use("/api/todo", todoRouter);
+  app.use("/api/projects", projectsRouter);
+  app.use("/api/oauth", oauthRouter);
+  app.use("/api/notifications", notificationsRouter);
+  app.use("/api/ssl", sslRouter);
+  app.use("/api/modules", modulesRouter);
+  app.use("/api/system", systemRouter);
 }

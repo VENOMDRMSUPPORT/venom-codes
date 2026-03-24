@@ -73,4 +73,56 @@ router.post("/:invoiceId/pay", async (req, res, next) => {
   }
 });
 
+/** POST /invoices - Create a new invoice */
+router.post("/", async (req, res, next) => {
+  try {
+    const {
+      items,
+      clientId,
+    } = req.body as {
+      items?: Array<{ description: string; amount: string }>;
+      clientId?: string;
+    };
+    
+    // Build items string for WHMCS API
+    const itemsData = items 
+      ? items.map((item, index) => {
+          const prefix = `item${index + 1}`;
+          return `${prefix}description=${encodeURIComponent(item.description)}&${prefix}amount=${encodeURIComponent(item.amount)}`;
+        }).join("&")
+      : "";
+    
+    const result = await whmcsCall<Record<string, unknown>>("CreateInvoice", {
+      userid: clientId ?? req.clientId!,
+      ...(itemsData && { lineitems: itemsData } as Record<string, unknown>),
+    });
+    res.status(201).json({
+      success: true,
+      invoiceId: (result as { id?: unknown }).id ?? (result as { invoiceid?: unknown }).invoiceid ?? null,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** PUT /invoices/:invoiceId - Update an invoice */
+router.put("/:invoiceId", async (req, res, next) => {
+  try {
+    const { status, notes, dueDate } = req.body as {
+      status?: string;
+      notes?: string;
+      dueDate?: string;
+    };
+    await whmcsCall("UpdateInvoice", {
+      invoiceid: req.params.invoiceId,
+      ...(status && { status }),
+      ...(notes && { notes }),
+      ...(dueDate && { duedate: dueDate }),
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 export default router;

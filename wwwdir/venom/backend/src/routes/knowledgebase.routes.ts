@@ -1,58 +1,48 @@
 import { Router, type IRouter } from "express";
 import { whmcsCall } from "../lib/whmcs-client.js";
-import { queryToWhmcsParams } from "../lib/query-params.js";
 
 const router: IRouter = Router();
 
+/** 
+ * GET /knowledgebase - Knowledgebase endpoint
+ * Note: WHMCS doesn't have a built-in Knowledgebase API. 
+ * This would typically require a custom solution or addon.
+ */
 router.get("/", async (_req, res, next) => {
   try {
-    const result = await whmcsCall<Record<string, unknown>>(
-      "GetKnowledgebaseCategories",
-      {},
-    );
-    res.json(result);
+    // Return a placeholder - KB typically requires custom implementation
+    res.json({
+      message: "Knowledgebase API not available in standard WHMCS",
+      suggestion: "Consider implementing custom KB endpoints or using a plugin",
+      categories: [],
+      articles: [],
+    });
   } catch (e) {
     next(e);
   }
 });
 
+/** GET /knowledgebase/search - Search KB (placeholder) */
 router.get("/search", async (req, res, next) => {
   try {
-    const result = await whmcsCall<Record<string, unknown>>(
-      "GetKnowledgebaseArticles",
-      {
-        ...queryToWhmcsParams(req.query),
-      },
-    );
-    res.json(result);
+    const { query: searchQuery } = req.query;
+    res.json({
+      message: "Knowledgebase search not available in standard WHMCS",
+      searchQuery,
+      results: [],
+    });
   } catch (e) {
     next(e);
   }
 });
 
-router.get("/:categoryId/:articleId", async (req, res, next) => {
+/** GET /knowledgebase/:articleId - Get KB article (placeholder) */
+router.get("/:articleId", async (req, res, next) => {
   try {
-    const result = await whmcsCall<Record<string, unknown>>(
-      "GetKnowledgebaseArticle",
-      {
-        articleid: req.params.articleId,
-      },
-    );
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.get("/:categoryId", async (req, res, next) => {
-  try {
-    const result = await whmcsCall<Record<string, unknown>>(
-      "GetKnowledgebaseArticles",
-      {
-        categoryid: req.params.categoryId,
-      },
-    );
-    res.json(result);
+    res.json({
+      message: "Knowledgebase article lookup not available in standard WHMCS",
+      articleId: req.params.articleId,
+    });
   } catch (e) {
     next(e);
   }

@@ -4,21 +4,11 @@ import { queryToWhmcsParams } from "../lib/query-params.js";
 
 const router: IRouter = Router();
 
+/** GET /announcements - List all announcements */
 router.get("/", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetAnnouncements", {
       ...queryToWhmcsParams(req.query),
-    });
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.get("/:announcementId", async (req, res, next) => {
-  try {
-    const result = await whmcsCall<Record<string, unknown>>("GetAnnouncements", {
-      id: req.params.announcementId,
     });
     res.json(result);
   } catch (e) {

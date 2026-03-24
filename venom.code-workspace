@@ -52,6 +52,7 @@
 			".wget-hsts": true,
 			".sudo_as_admin_successful": true,
 			".claude.json": true,
+			"**/node_modules": true,
 			"node_modules": true,
 			"wwwdir/venom/node_modules": true,
 			"wwwdir/venom/backend/node_modules": true,

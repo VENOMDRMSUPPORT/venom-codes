@@ -83,4 +83,16 @@ router.post("/:quoteId/send", async (req, res, next) => {
   }
 });
 
+/** DELETE /quotes/:quoteId - Delete a quote */
+router.delete("/:quoteId", async (req, res, next) => {
+  try {
+    await whmcsCall("DeleteQuote", {
+      quoteid: req.params.quoteId,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 export default router;

@@ -74,9 +74,11 @@ const cancelBody = z.object({
 
 router.post("/:serviceId/cancel", async (req, res, next) => {
   try {
-    cancelBody.parse(req.body);
-    await whmcsCall("ModuleTerminate", {
+    const body = cancelBody.parse(req.body);
+    await whmcsCall("AddCancelRequest", {
       serviceid: req.params.serviceId,
+      ...(body.reason && { reason: body.reason }),
+      ...(body.type && { type: body.type }),
     });
     res.json({ success: true, message: "Cancellation requested" });
   } catch (e) {
@@ -129,6 +131,59 @@ router.post("/:serviceId/unsuspend", async (req, res, next) => {
   try {
     await whmcsCall("ModuleUnsuspend", {
       serviceid: req.params.serviceId,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /services/:serviceId/password - Change hosting account password */
+router.post("/:serviceId/password", async (req, res, next) => {
+  try {
+    const { newPassword } = req.body as { newPassword?: string };
+    if (!newPassword) {
+      res.status(400).json({ error: "bad_request", message: "New password is required" });
+      return;
+    }
+    await whmcsCall("ModuleChangePw", {
+      serviceid: req.params.serviceId,
+      newPassword,
+    });
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /services/:serviceId/configoptions - Get configurable options for a service */
+router.get("/:serviceId/configoptions", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>(
+      "GetClientsProducts",
+      {
+        clientid: req.clientId!,
+        serviceid: req.params.serviceId,
+      },
+    );
+    // The configoptions should be in the product response
+    const products = result.products as { product?: unknown } | undefined;
+    const raw = products?.product;
+    const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    const configoptions = (list[0] as Record<string, unknown>)?.configoptions;
+    res.json({ configoptions: configoptions ?? [] });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** PUT /services/:serviceId/config - Update service configuration */
+router.put("/:serviceId/config", async (req, res, next) => {
+  try {
+    const { configoptions } = req.body as { configoptions?: Record<string, string | number> };
+    await whmcsCall("UpdateClientProduct", {
+      serviceid: req.params.serviceId,
+      ...configoptions,
     });
     res.json({ success: true });
   } catch (e) {

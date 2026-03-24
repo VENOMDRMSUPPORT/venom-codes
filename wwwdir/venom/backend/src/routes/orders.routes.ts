@@ -82,4 +82,26 @@ router.post("/:orderId/pending", async (req, res, next) => {
   }
 });
 
+/** POST /orders/:orderId/fraud - Mark order as fraud */
+router.post("/:orderId/fraud", async (req, res, next) => {
+  try {
+    await whmcsCall("FraudOrder", {
+      orderid: req.params.orderId,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /orders/statuses - Get all order statuses */
+router.get("/statuses", async (_req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("GetOrderStatuses", {});
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
 export default router;

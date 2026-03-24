@@ -137,19 +137,27 @@ router.delete("/contacts/:contactId", async (req, res, next) => {
   }
 });
 
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
-  newPassword: z.string().min(6),
-});
-
+// Note: WHMCS doesn't have a direct ChangePassword API for clients
+// Password changes are typically done through the WHMCS client area interface
+// or can be implemented using UpdateClient with password2 if supported
 router.post("/change-password", async (req, res, next) => {
   try {
-    const body = changePasswordSchema.parse(req.body);
-    await whmcsCall("ChangePassword", {
+    const { newPassword } = req.body as { newPassword?: string };
+    if (!newPassword || newPassword.length < 6) {
+      res.status(400).json({ 
+        error: "bad_request", 
+        message: "New password must be at least 6 characters" 
+      });
+      return;
+    }
+    
+    // Using UpdateClient with password2 - this may require admin context
+    // In client context, users typically use the password change form in client area
+    await whmcsCall("UpdateClient", {
       clientid: req.clientId!,
-      password2: body.newPassword,
-      oldpassword: body.currentPassword,
+      password2: newPassword,
     });
+    
     res.json({ success: true, message: "Password updated" });
   } catch (e) {
     next(e);
@@ -245,6 +253,47 @@ router.get("/dashboard", async (req, res, next) => {
       recentTickets: [],
       recentAnnouncements: [],
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /client/emails - Get client email history */
+router.get("/emails", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("GetEmails", {
+      clientid: req.clientId!,
+    });
+    const emails = result.emails as { email?: unknown } | undefined;
+    const raw = emails?.email;
+    const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    const mapped = list.map((e: Record<string, unknown>) => ({
+      id: String(e.id ?? ""),
+      date: String(e.date ?? ""),
+      subject: String(e.subject ?? ""),
+      from_: String(e.from ?? ""),
+      to: String(e.to ?? ""),
+      body: String(e.message ?? ""),
+    }));
+    res.json({ emails: mapped });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /client/notes - Add a note to client account */
+router.post("/notes", async (req, res, next) => {
+  try {
+    const { note } = req.body as { note?: string };
+    if (!note) {
+      res.status(400).json({ error: "bad_request", message: "Note content is required" });
+      return;
+    }
+    await whmcsCall("AddClientNote", {
+      userid: req.clientId!,
+      notes: note,
+    });
+    res.status(201).json({ success: true });
   } catch (e) {
     next(e);
   }

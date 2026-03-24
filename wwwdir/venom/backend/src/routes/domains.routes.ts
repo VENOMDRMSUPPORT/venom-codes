@@ -100,8 +100,10 @@ router.post("/:domainId/renew", async (req, res, next) => {
 
 router.post("/:domainId/idprotection", async (req, res, next) => {
   try {
-    await whmcsCall("DomainUpdateIDProtection", {
+    const { enable } = req.body as { enable?: boolean };
+    await whmcsCall("DomainToggleIdProtect", {
       domainid: req.params.domainId,
+      ...(enable !== undefined && { idprotect: enable ? "1" : "0" }),
     });
     res.json({ success: true });
   } catch (e) {
@@ -111,19 +113,10 @@ router.post("/:domainId/idprotection", async (req, res, next) => {
 
 router.post("/:domainId/registrarlock", async (req, res, next) => {
   try {
-    await whmcsCall("DomainRegistrarLock", {
+    const { lock } = req.body as { lock?: boolean };
+    await whmcsCall("DomainUpdateLockingStatus", {
       domainid: req.params.domainId,
-    });
-    res.json({ success: true });
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.post("/:domainId/autorenew", async (req, res, next) => {
-  try {
-    await whmcsCall("DomainUpdateAutorenew", {
-      domainid: req.params.domainId,
+      lockstatus: lock ?? true,
     });
     res.json({ success: true });
   } catch (e) {
@@ -141,6 +134,139 @@ router.post("/:domainId/transfer", async (req, res, next) => {
     await whmcsCall("DomainTransfer", {
       domainid: req.params.domainId,
       eppcode: body.eppCode,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /domains/:domainId/lock-status - Get domain registrar lock status */
+router.get("/:domainId/lock-status", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("DomainGetLockingStatus", {
+      domainid: req.params.domainId,
+    });
+    res.json({
+      locked: result.lockstatus === "locked" || result.lockstatus === "1",
+      raw: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** PUT /domains/:domainId/lock-status - Enable/disable registrar lock */
+router.put("/:domainId/lock-status", async (req, res, next) => {
+  try {
+    const { lock } = req.body as { lock?: boolean };
+    await whmcsCall("DomainUpdateLockingStatus", {
+      domainid: req.params.domainId,
+      lock: lock === false ? "unlock" : "lock",
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /domains/:domainId/nameservers - Get domain nameservers */
+router.get("/:domainId/nameservers", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("DomainGetNameservers", {
+      domainid: req.params.domainId,
+    });
+    res.json({
+      ns1: result.ns1 ?? null,
+      ns2: result.ns2 ?? null,
+      ns3: result.ns3 ?? null,
+      ns4: result.ns4 ?? null,
+      ns5: result.ns5 ?? null,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /domains/:domainId/whois - Get domain WHOIS information */
+router.get("/:domainId/whois", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("DomainGetWhoisInfo", {
+      domainid: req.params.domainId,
+    });
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** PUT /domains/:domainId/whois - Update domain WHOIS information */
+router.put("/:domainId/whois", async (req, res, next) => {
+  try {
+    const { contactInformation } = req.body as { contactInformation?: Record<string, unknown> };
+    await whmcsCall("DomainUpdateWhoisInfo", {
+      domainid: req.params.domainId,
+      ...contactInformation,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /domains/:domainId/epp - Request EPP code for domain transfer */
+router.post("/:domainId/epp", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("DomainRequestEPP", {
+      domainid: req.params.domainId,
+    });
+    res.json({
+      success: true,
+      eppCode: result.eppcode ?? null,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /domains/:domainId/register - Register a domain (admin only typically) */
+router.post("/:domainId/register", async (req, res, next) => {
+  try {
+    const {
+      years = 1,
+      nameservers,
+      registrant,
+    } = req.body as {
+      years?: number;
+      nameservers?: string[];
+      registrant?: Record<string, unknown>;
+    };
+    await whmcsCall("DomainRegister", {
+      domainid: req.params.domainId,
+      regperiod: years,
+      ns1: nameservers?.[0],
+      ns2: nameservers?.[1],
+      ns3: nameservers?.[2],
+      ns4: nameservers?.[3],
+      ...registrant,
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /domains/:domainId/release - Release domain to another registrar */
+router.post("/:domainId/release", async (req, res, next) => {
+  try {
+    const { tag } = req.body as { tag?: string };
+    if (!tag) {
+      res.status(400).json({ error: "bad_request", message: "Tag is required" });
+      return;
+    }
+    await whmcsCall("DomainRelease", {
+      domainid: req.params.domainId,
+      transfertag: tag,
     });
     res.json({ success: true });
   } catch (e) {
