@@ -31,16 +31,16 @@ interface Product extends Record<string, unknown> {
 interface ConfigOption extends Record<string, unknown> {
   id: number;
   gid: number;
-  name: string;
+  optionname: string;
   optiontype: string;
-  qtymin: number;
-  qtymax: number;
+  qtyminimum: number;
+  qtymaximum: number;
 }
 
 interface ConfigOptionSub extends Record<string, unknown> {
   id: number;
   configid: number;
-  name: string;
+  optionname: string;
   sortorder: number;
   hidden: number;
 }
@@ -102,13 +102,13 @@ export async function diagnoseLoadBalancers() {
   // 2. Check for existing Configurable Options related to Load Balancer
   console.log("\n2. Checking Configurable Options...");
   const [configOptions] = await pool.query<ConfigOption[]>(
-    "SELECT id, gid, name, optiontype, qtymin, qtymax FROM tblproductconfigoptions WHERE name LIKE '%Load Balancer%' OR name LIKE '%load%' OR name LIKE '%balancer%'"
+    "SELECT id, gid, optionname, optiontype, qtyminimum, qtymaximum FROM tblproductconfigoptions WHERE optionname LIKE '%Load Balancer%' OR optionname LIKE '%load%' OR optionname LIKE '%balancer%'"
   );
 
   const loadBalancerOptionIds: number[] = [];
   for (const opt of configOptions) {
-    console.log(`   - Config Option ID ${opt.id}: "${opt.name}" (Type: ${opt.optiontype}, MinQty: ${opt.qtymin}, MaxQty: ${opt.qtymax}, Group: ${opt.gid})`);
-    if (String(opt.name).toLowerCase().includes("load") || String(opt.name).toLowerCase().includes("balancer")) {
+    console.log(`   - Config Option ID ${opt.id}: "${opt.optionname}" (Type: ${opt.optiontype}, MinQty: ${opt.qtyminimum}, MaxQty: ${opt.qtymaximum}, Group: ${opt.gid})`);
+    if (String(opt.optionname).toLowerCase().includes("load") || String(opt.optionname).toLowerCase().includes("balancer")) {
       loadBalancerOptionIds.push(opt.id);
     }
   }
@@ -135,12 +135,12 @@ export async function diagnoseLoadBalancers() {
   console.log("\n4. Checking Config Option Sub-options...");
   for (const optId of loadBalancerOptionIds) {
     const [subOptions] = await pool.query<ConfigOptionSub[]>(
-      "SELECT id, configid, name, sortorder, hidden FROM tblproductconfigoptionssub WHERE configid = ?",
+      "SELECT id, configid, optionname, sortorder, hidden FROM tblproductconfigoptionssub WHERE configid = ?",
       [optId]
     );
     console.log(`   - Config Option ${optId} has ${subOptions.length} sub-options:`);
     for (const sub of subOptions) {
-      console.log(`     - Sub-option ID ${sub.id}: "${sub.name}" (Hidden: ${sub.hidden})`);
+      console.log(`     - Sub-option ID ${sub.id}: "${sub.optionname}" (Hidden: ${sub.hidden})`);
 
       // Get pricing for this sub-option
       const [pricing] = await pool.query<Pricing[]>(

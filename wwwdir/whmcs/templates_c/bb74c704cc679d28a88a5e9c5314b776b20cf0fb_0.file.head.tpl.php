@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.3, created on 2026-03-24 18:32:49
+/* Smarty version 4.5.3, created on 2026-03-25 17:40:02
   from '/home/venom/wwwdir/whmcs/templates/six/includes/head.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.3',
-  'unifunc' => 'content_69c2d8d15959f3_41420077',
+  'unifunc' => 'content_69c41df266d244_38366754',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_69c2d8d15959f3_41420077 (Smarty_Internal_Template $_smarty_tpl) {
+function content_69c41df266d244_38366754 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!-- Styling -->
 <?php echo WHMCS\View\Asset::fontCssInclude('open-sans-family.css');?>
 

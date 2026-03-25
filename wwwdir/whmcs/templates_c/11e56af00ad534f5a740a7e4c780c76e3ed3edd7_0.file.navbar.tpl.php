@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.3, created on 2026-03-24 18:32:49
+/* Smarty version 4.5.3, created on 2026-03-25 17:40:02
   from '/home/venom/wwwdir/whmcs/templates/six/includes/navbar.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.3',
-  'unifunc' => 'content_69c2d8d15a2c92_79655988',
+  'unifunc' => 'content_69c41df26783d0_10986014',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_69c2d8d15a2c92_79655988 (Smarty_Internal_Template $_smarty_tpl) {
+function content_69c41df26783d0_10986014 (Smarty_Internal_Template $_smarty_tpl) {
 $_from = $_smarty_tpl->smarty->ext->_foreach->init($_smarty_tpl, $_smarty_tpl->tpl_vars['navbar']->value, 'item');
 $_smarty_tpl->tpl_vars['item']->do_else = true;
 if ($_from !== null) foreach ($_from as $_smarty_tpl->tpl_vars['item']->value) {

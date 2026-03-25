@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.3, created on 2026-03-24 18:32:49
+/* Smarty version 4.5.3, created on 2026-03-25 17:40:02
   from '/home/venom/wwwdir/whmcs/templates/six/includes/verifyemail.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.3',
-  'unifunc' => 'content_69c2d8d15ab1c1_12025176',
+  'unifunc' => 'content_69c41df267ea40_37376842',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_69c2d8d15ab1c1_12025176 (Smarty_Internal_Template $_smarty_tpl) {
+function content_69c41df267ea40_37376842 (Smarty_Internal_Template $_smarty_tpl) {
 if ($_smarty_tpl->tpl_vars['showEmailVerificationBanner']->value) {?>
     <div class="verification-banner email-verification">
         <div class="container">
