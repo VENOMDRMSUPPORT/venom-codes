@@ -5,10 +5,10 @@
 # VENOM CODES
 **Advanced IPTV Control Platform & Streaming Solutions**
 
-[![Platform](https://img.shields.io/badge/Platform-IPTV-blue)](http://venom-codes.test)
+[![Platform](https://img.shields.io/badge/Platform-IPTV-blue)](https://venom-codes.test)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0.0-orange)](https://github.com/venom-codes)
-[![Support](https://img.shields.io/badge/Support-24/7-brightgreen)](http://support.venom-codes.test)
+[![Support](https://img.shields.io/badge/Support-24/7-brightgreen)](https://venom-codes.test/submitticket.php)
 
 *A professional-grade, self-developed IPTV management and streaming operations platform built for operators who need stability, scalability, and control.*
 
@@ -465,10 +465,10 @@ pm2 logs venom
 
 ### Support Channels
 
-- **Documentation:** [docs.venom-codes.test](http://docs.venom-codes.test)
+- **Documentation:** [venom-codes.test/docs](https://venom-codes.test/docs)
 - **Email Support:** support@venom-codes.test
-- **Ticket System:** [support.venom-codes.test](http://support.venom-codes.test)
-- **Community Forum:** [community.venom-codes.test](http://community.venom-codes.test)
+- **Ticket System:** [venom-codes.test/submitticket.php](https://venom-codes.test/submitticket.php)
+- **Client Area:** [venom-codes.test/clientarea.php](https://venom-codes.test/clientarea.php)
 
 ### Response Times
 
@@ -518,11 +518,11 @@ For licensing inquiries, contact: **legal@venom-codes.test**
 
 | Resource | URL |
 |----------|-----|
-| **Website** | [venom-codes.test](http://venom-codes.test) |
-| **Documentation** | [docs.venom-codes.test](http://docs.venom-codes.test) |
-| **Support** | [support.venom-codes.test](http://support.venom-codes.test) |
-| **Status** | [status.venom-codes.test](http://status.venom-codes.test) |
-| **Blog** | [blog.venom-codes.test](http://blog.venom-codes.test) |
+| **Website** | [venom-codes.test](https://venom-codes.test) |
+| **Documentation** | [venom-codes.test/docs](https://venom-codes.test/docs) |
+| **Support** | [venom-codes.test/submitticket.php](https://venom-codes.test/submitticket.php) |
+| **Client Area** | [venom-codes.test/clientarea.php](https://venom-codes.test/clientarea.php) |
+| **Admin** | [venom-codes.test/admin](https://venom-codes.test/admin) |
 
 ---
 
