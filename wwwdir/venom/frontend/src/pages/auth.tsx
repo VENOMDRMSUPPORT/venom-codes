@@ -80,7 +80,12 @@ const registerSchema = z.object({
   firstname: z.string().min(2, "First name required"),
   lastname: z.string().min(2, "Last name required"),
   email: z.string().email(),
-  password: z.string().min(8, "Min 8 characters"),
+  password: z.string()
+    .min(12, "Password must be at least 12 characters")
+    .regex(/[A-Z]/, "Must contain uppercase letter")
+    .regex(/[a-z]/, "Must contain lowercase letter")
+    .regex(/[0-9]/, "Must contain number")
+    .regex(/[^A-Za-z0-9]/, "Must contain special character"),
   companyname: z.string().optional(),
 });
 

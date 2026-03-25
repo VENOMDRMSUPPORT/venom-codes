@@ -30,6 +30,7 @@ router.get("/:invoiceId", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetInvoice", {
       invoiceid: req.params.invoiceId,
+      userid: req.clientId!, // IDOR fix: restrict to authenticated user's invoices
     });
     const inv = result as Record<string, unknown>;
     res.json({
@@ -64,6 +65,7 @@ router.post("/:invoiceId/pay", async (req, res, next) => {
     const body = payBody.parse(req.body);
     const result = await whmcsCall<Record<string, unknown>>("AddInvoicePayment", {
       invoiceid: req.params.invoiceId,
+      userid: req.clientId!, // IDOR fix: ensure user can only pay their own invoices
       transid: body.payMethodId ?? "",
       gateway: "manual",
       amount: "0",
@@ -120,6 +122,7 @@ router.put("/:invoiceId", async (req, res, next) => {
     };
     await whmcsCall("UpdateInvoice", {
       invoiceid: req.params.invoiceId,
+      userid: req.clientId!, // IDOR fix: ensure user can only update their own invoices
       ...(status && { status }),
       ...(notes && { notes }),
       ...(dueDate && { duedate: dueDate }),

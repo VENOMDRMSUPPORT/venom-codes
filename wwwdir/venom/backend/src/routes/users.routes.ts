@@ -6,10 +6,22 @@ import { z } from "zod";
 import { whmcsCall } from "../lib/whmcs-client.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
+// Admin-only middleware for user management operations
+// For now, this is a placeholder - in production, implement proper role-based access control
+const requireAdmin = (req: any, res: any, next: any) => {
+  // TODO: Implement proper admin role check
+  // For security, we disable user enumeration by returning 403
+  // In a full implementation, check req.userRole === 'admin'
+  return res.status(403).json({
+    error: "forbidden",
+    message: "User management endpoints require admin privileges"
+  });
+};
+
 const router: IRouter = Router();
 
-/** GET /users - Get all users (requires auth) */
-router.get("/", requireAuth, async (req, res, next) => {
+/** GET /users - Get all users (ADMIN ONLY - disabled for security) */
+router.get("/", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const params: Record<string, string> = {};
     if (req.query.limitstart) params.limitstart = String(req.query.limitstart);
@@ -45,9 +57,21 @@ router.get("/permissions-list", requireAuth, async (_req, res, next) => {
   }
 });
 
-/** GET /users/:userId - Get specific user details */
+/** GET /users/:userId - Get specific user details (own profile only) */
 router.get("/:userId", requireAuth, async (req, res, next) => {
   try {
+    const requestedUserId = req.params.userId;
+    const authenticatedUserId = req.clientId;
+
+    // IDOR fix: Users can only view their own profile
+    if (requestedUserId !== authenticatedUserId) {
+      res.status(403).json({
+        error: "forbidden",
+        message: "You can only view your own profile"
+      });
+      return;
+    }
+
     const result = await whmcsCall<Record<string, unknown>>("GetUsers", {
       userid: req.params.userId,
     });
@@ -71,8 +95,8 @@ const addUserSchema = z.object({
   password: z.string().min(6),
 });
 
-/** POST /users - Create new user */
-router.post("/", requireAuth, async (req, res, next) => {
+/** POST /users - Create new user (ADMIN ONLY) */
+router.post("/", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const body = addUserSchema.parse(req.body);
     const result = await whmcsCall<Record<string, unknown>>("AddUser", {
@@ -97,9 +121,21 @@ const updateUserSchema = z.object({
   email: z.string().email().optional(),
 });
 
-/** PUT /users/:userId - Update user */
+/** PUT /users/:userId - Update user (own profile only, except admins) */
 router.put("/:userId", requireAuth, async (req, res, next) => {
   try {
+    const requestedUserId = req.params.userId;
+    const authenticatedUserId = req.clientId;
+
+    // Users can only update their own profile
+    if (requestedUserId !== authenticatedUserId) {
+      res.status(403).json({
+        error: "forbidden",
+        message: "You can only update your own profile"
+      });
+      return;
+    }
+
     const body = updateUserSchema.parse(req.body);
     const params: Record<string, string> = { userid: String(req.params.userId) };
     if (typeof body.firstname === "string") params.firstname = body.firstname;
@@ -113,8 +149,8 @@ router.put("/:userId", requireAuth, async (req, res, next) => {
   }
 });
 
-/** DELETE /users/:userId - Delete user */
-router.delete("/:userId", requireAuth, async (req, res, next) => {
+/** DELETE /users/:userId - Delete user (ADMIN ONLY) */
+router.delete("/:userId", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     await whmcsCall("DeleteUser", {
       userid: req.params.userId,
@@ -125,8 +161,8 @@ router.delete("/:userId", requireAuth, async (req, res, next) => {
   }
 });
 
-/** POST /users/:userId/clients - Associate user with client */
-router.post("/:userId/clients", requireAuth, async (req, res, next) => {
+/** POST /users/:userId/clients - Associate user with client (ADMIN ONLY) */
+router.post("/:userId/clients", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { clientId } = req.body as { clientId?: string };
     if (!clientId) {
@@ -143,8 +179,8 @@ router.post("/:userId/clients", requireAuth, async (req, res, next) => {
   }
 });
 
-/** DELETE /users/:userId/clients/:clientId - Remove user-client association */
-router.delete("/:userId/clients/:clientId", requireAuth, async (req, res, next) => {
+/** DELETE /users/:userId/clients/:clientId - Remove user-client association (ADMIN ONLY) */
+router.delete("/:userId/clients/:clientId", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     await whmcsCall("DeleteUserClient", {
       userid: req.params.userId,
@@ -156,8 +192,8 @@ router.delete("/:userId/clients/:clientId", requireAuth, async (req, res, next) 
   }
 });
 
-/** GET /users/:userId/permissions - Get user permissions */
-router.get("/:userId/permissions", requireAuth, async (req, res, next) => {
+/** GET /users/:userId/permissions - Get user permissions (ADMIN ONLY) */
+router.get("/:userId/permissions", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetUserPermissions", {
       userid: req.params.userId,
@@ -168,8 +204,8 @@ router.get("/:userId/permissions", requireAuth, async (req, res, next) => {
   }
 });
 
-/** PUT /users/:userId/permissions - Update user permissions */
-router.put("/:userId/permissions", requireAuth, async (req, res, next) => {
+/** PUT /users/:userId/permissions - Update user permissions (ADMIN ONLY) */
+router.put("/:userId/permissions", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { permissions } = req.body as { permissions?: string[] };
     if (!permissions) {

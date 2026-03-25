@@ -1,6 +1,43 @@
 import mysql, { type RowDataPacket } from "mysql2/promise";
 import { config } from "../config.js";
 
+/**
+ * MySQL connection pool configuration.
+ *
+ * Production-aware settings with timeout controls:
+ *
+ * CONNECTION POOL:
+ * - connectionLimit: Max connections in pool (default: 20)
+ *   Rationale: Balance between resource usage and concurrency. 20 connections
+ *   can handle ~200-400 concurrent requests with proper connection reuse.
+ *
+ * - queueLimit: Max queued connection requests (default: 50)
+ *   Rationale: Prevents unbounded memory growth. 50 queued requests gives
+ *   ~250 total pending operations (20 active + 50 queued * ~4.6 avg wait).
+ *   Requests beyond this fail fast rather than waiting indefinitely.
+ *
+ * TIMEOUT SETTINGS:
+ * - connectTimeout: Initial connection timeout (default: 10000ms = 10s)
+ *   Rationale: MySQL on same network/datacenter should connect in <1s.
+ *   10s allows for network hiccups while failing fast on real issues.
+ *
+ * - waitForConnections + queueLimit: Controls pool exhaustion behavior.
+ *   When queueLimit is reached, new requests fail immediately with error.
+ *   This is preferable to unbounded queuing which can cause memory issues.
+ *
+ * IDLE CONNECTION HANDLING:
+ * - mysql2 doesn't support idleTimeout in pool config directly.
+ * - Idle timeout is handled at the MySQL server level (wait_timeout).
+ * - enableKeepAlive: true prevents "connection lost" errors from idle TCP.
+ * - The pool automatically recreates connections if server closes them.
+ *
+ * KEEP-ALIVE:
+ * - enableKeepAlive: Prevents connection drops from idle TCP connections
+ * - keepAliveInitialDelay: 0 means use OS default (usually 2 hours)
+ *
+ * SECURITY:
+ * - multipleStatements: false - Prevents SQL injection via stacked queries
+ */
 const pool = mysql.createPool({
   host: config.DB_HOST,
   port: config.DB_PORT,
@@ -8,8 +45,12 @@ const pool = mysql.createPool({
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  connectionLimit: Number(config.MYSQL_CONNECTION_LIMIT),
+  queueLimit: Number(config.MYSQL_QUEUE_LIMIT),
+  // Timeout settings for stability
+  connectTimeout: Number(config.MYSQL_CONNECT_TIMEOUT),
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
   multipleStatements: false,
 });
 

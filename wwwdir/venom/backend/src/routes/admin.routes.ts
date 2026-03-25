@@ -92,8 +92,28 @@ router.get("/servers", async (req, res, next) => {
 /** GET /admin/servers/:serverId - Get specific server details */
 router.get("/servers/:serverId", async (req, res, next) => {
   try {
+    const { serverId } = req.params;
+
+    // SECURITY: First verify the server exists in the allowed list
+    // This prevents admins from accessing arbitrary servers by ID guessing
+    const allServersResult = await whmcsCall<Record<string, unknown>>("GetServers", {});
+    const allServers = allServersResult.servers as { server?: unknown } | undefined;
+    const rawAll = allServers?.server;
+    const serverList = Array.isArray(rawAll) ? rawAll : rawAll ? [rawAll] : [];
+
+    // Verify the requested server ID exists in the list
+    const exists = serverList.some((s: Record<string, unknown>) =>
+      String(s.id ?? "") === String(serverId)
+    );
+
+    if (!exists) {
+      res.status(404).json({ error: "not_found", message: "Server not found" });
+      return;
+    }
+
+    // Server exists, fetch its details
     const result = await whmcsCall<Record<string, unknown>>("GetServers", {
-      serverid: req.params.serverId,
+      serverid: serverId,
     });
     const servers = result.servers as { server?: unknown } | undefined;
     const raw = servers?.server;

@@ -28,7 +28,7 @@ function CartItemRow({
   onRemove,
   removing,
 }: {
-  item: { id: string; name: string; billingCycle?: string; price: number; quantity?: number };
+  item: { id?: string; name: string; billingCycle?: string; price: number; quantity?: number };
   onRemove: () => void;
   removing: boolean;
 }) {
@@ -82,6 +82,7 @@ export function Cart() {
   const hasItems = items.length > 0;
 
   async function handleRemoveItem(itemId: string) {
+    if (!itemId) return;
     setRemovingId(itemId);
     try {
       await removeItemMut.mutateAsync({ itemId });
@@ -223,9 +224,9 @@ export function Cart() {
                 <>
                   <div className="glass rounded-2xl overflow-hidden mb-4">
                     <AnimatePresence>
-                      {items.map((item) => (
+                      {items.map((item, idx) => (
                         <CartItemRow
-                          key={item.id}
+                          key={item.id || `cart-item-${idx}`}
                           item={item}
                           onRemove={() => handleRemoveItem(item.id)}
                           removing={removingId === item.id}

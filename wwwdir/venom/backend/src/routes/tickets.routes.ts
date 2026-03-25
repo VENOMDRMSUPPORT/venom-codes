@@ -133,6 +133,7 @@ router.get("/:ticketId", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetTicket", {
       ticketid: req.params.ticketId,
+      clientid: req.clientId!, // IDOR fix: restrict to authenticated user's tickets
     });
     res.json(mapTicketDetail(result));
   } catch (e) {
@@ -162,6 +163,7 @@ router.post("/:ticketId/close", async (req, res, next) => {
   try {
     await whmcsCall("UpdateTicket", {
       ticketid: req.params.ticketId,
+      clientid: req.clientId!, // IDOR fix: ensure user can only close their own tickets
       status: "Closed",
     });
     res.json({ success: true });
@@ -174,6 +176,7 @@ router.get("/:ticketId/notes", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetTicketNotes", {
       ticketid: req.params.ticketId,
+      clientid: req.clientId!, // IDOR fix: restrict to authenticated user's tickets
     });
     const notes = result.notes as { note?: unknown } | undefined;
     const raw = notes?.note;
@@ -199,6 +202,7 @@ router.post("/:ticketId/notes", async (req, res, next) => {
     }
     await whmcsCall("AddTicketNote", {
       ticketid: req.params.ticketId,
+      clientid: req.clientId!, // IDOR fix: ensure user can only add notes to their own tickets
       message,
     });
     res.status(201).json({ success: true });
@@ -211,6 +215,7 @@ router.get("/:ticketId/attachments", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetTicketAttachment", {
       ticketid: req.params.ticketId,
+      clientid: req.clientId!, // IDOR fix: restrict to authenticated user's tickets
     });
     res.json(result);
   } catch (e) {
@@ -223,6 +228,7 @@ router.delete("/:ticketId/replies/:replyId", async (req, res, next) => {
     await whmcsCall("DeleteTicketReply", {
       ticketid: req.params.ticketId,
       replyid: req.params.replyId,
+      clientid: req.clientId!, // IDOR fix: ensure user can only delete replies from their own tickets
     });
     res.json({ success: true });
   } catch (e) {

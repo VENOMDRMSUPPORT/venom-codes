@@ -19,6 +19,11 @@ export type WhmcsParams = Record<
 
 /**
  * Calls WHMCS External API (POST includes/api.php).
+ *
+ * CONFIGURATION:
+ * - Timeout is configurable via WHMCS_TIMEOUT environment variable (default: 30000ms)
+ * - Adjust this based on your WHMCS server performance and network latency
+ *
  * @see https://developers.whmcs.com/api/
  */
 export async function whmcsCall<T = Record<string, unknown>>(
@@ -43,7 +48,7 @@ export async function whmcsCall<T = Record<string, unknown>>(
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
-    signal: AbortSignal.timeout(30000), // 30 second timeout
+    signal: AbortSignal.timeout(config.WHMCS_TIMEOUT),
   });
 
   const json = (await res.json()) as Record<string, unknown>;

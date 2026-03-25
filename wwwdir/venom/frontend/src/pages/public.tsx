@@ -1,6 +1,6 @@
-import React, { useState } from "react"; // React
-// DOMPurify import for sanitizing HTML content
-import { Link, useRoute, useLocation } from "wouter"; // router
+import React, { useState } from "react";
+import DOMPurify from "dompurify";
+import { Link, useRoute, useLocation } from "wouter";
 import {
   useGetAnnouncements,
   useGetAnnouncement,
@@ -55,7 +55,7 @@ export function AnnouncementsList() {
               <h3 className="text-lg font-bold text-white mt-2 mb-3 group-hover:text-primary transition-colors">{a.title}</h3>
               <div
                 className="text-white/60 text-sm line-clamp-3"
-                dangerouslySetInnerHTML={{ __html: a.announcement || "" }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(a.announcement || "") }}
               />
               <span className="mt-4 inline-block text-xs font-semibold text-primary">Read More →</span>
             </div>
@@ -106,7 +106,7 @@ export function AnnouncementDetail() {
             <h1 className="text-3xl font-bold text-white mt-3 mb-6">{data.title}</h1>
             <div
               className="text-white/80 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: data.announcement || "" }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.announcement || "") }}
             />
           </div>
         )}
@@ -193,7 +193,7 @@ export function KnowledgebaseIndex() {
                       <h3 className="font-semibold text-white group-hover:text-primary transition-colors">{article.title}</h3>
                       <div
                         className="text-white/50 text-xs mt-1 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: article.content }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
                       />
                     </div>
                   </Link>
@@ -411,7 +411,7 @@ export function KnowledgebaseArticlePage() {
             )}
             <div
               className="text-white/80 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: data.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.content) }}
             />
           </div>
         )}

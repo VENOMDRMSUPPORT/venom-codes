@@ -1,7 +1,9 @@
-process.env.JWT_SECRET = "test-jwt-secret-min-16-chars";
+process.env.JWT_SECRET = "test-jwt-secret-key-at-least-32-characters-long-for-security";
 process.env.JWT_EXPIRES_IN = "1h";
 process.env.WHMCS_URL = "https://example.test/";
 process.env.WHMCS_IDENTIFIER = "test_id";
-process.env.WHMCS_SECRET = "test_secret_value";
+process.env.WHMCS_SECRET = "test_secret_value_at_least_1_char";
 process.env.FRONTEND_ORIGIN = "http://localhost:5173";
 process.env.NODE_ENV = "test";
+process.env.DB_HOST = "127.0.0.1";
+process.env.DB_NAME = "test_db";

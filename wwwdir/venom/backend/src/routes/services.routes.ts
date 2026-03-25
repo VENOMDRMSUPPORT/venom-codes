@@ -4,6 +4,7 @@ import { whmcsCall } from "../lib/whmcs-client.js";
 import { queryToWhmcsParams } from "../lib/query-params.js";
 import { mapProductsToServices } from "../lib/whmcs-transforms.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireServiceOwnership } from "../middlewares/authorization.js";
 
 const router: IRouter = Router();
 router.use(requireAuth);
@@ -83,7 +84,7 @@ const cancelBody = z.object({
   type: z.string().optional(),
 });
 
-router.post("/:serviceId/cancel", async (req, res, next) => {
+router.post("/:serviceId/cancel", requireServiceOwnership, async (req, res, next) => {
   try {
     const body = cancelBody.parse(req.body);
     await whmcsCall("AddCancelRequest", {
@@ -105,7 +106,7 @@ const upgradeBody = z.object({
   paymentmethod: z.string().optional(),
 });
 
-router.post("/:serviceId/upgrade", async (req, res, next) => {
+router.post("/:serviceId/upgrade", requireServiceOwnership, async (req, res, next) => {
   try {
     const body = upgradeBody.parse(req.body);
     const pid = body.newProductId ?? body.newproductid;
@@ -122,7 +123,7 @@ router.post("/:serviceId/upgrade", async (req, res, next) => {
   }
 });
 
-router.post("/:serviceId/suspend", async (req, res, next) => {
+router.post("/:serviceId/suspend", requireServiceOwnership, async (req, res, next) => {
   try {
     await whmcsCall("ModuleSuspend", {
       serviceid: req.params.serviceId,
@@ -133,7 +134,7 @@ router.post("/:serviceId/suspend", async (req, res, next) => {
   }
 });
 
-router.post("/:serviceId/terminate", async (req, res, next) => {
+router.post("/:serviceId/terminate", requireServiceOwnership, async (req, res, next) => {
   try {
     await whmcsCall("ModuleTerminate", {
       serviceid: req.params.serviceId,
@@ -144,7 +145,7 @@ router.post("/:serviceId/terminate", async (req, res, next) => {
   }
 });
 
-router.post("/:serviceId/unsuspend", async (req, res, next) => {
+router.post("/:serviceId/unsuspend", requireServiceOwnership, async (req, res, next) => {
   try {
     await whmcsCall("ModuleUnsuspend", {
       serviceid: req.params.serviceId,
@@ -156,7 +157,7 @@ router.post("/:serviceId/unsuspend", async (req, res, next) => {
 });
 
 /** POST /services/:serviceId/password - Change hosting account password */
-router.post("/:serviceId/password", async (req, res, next) => {
+router.post("/:serviceId/password", requireServiceOwnership, async (req, res, next) => {
   try {
     const { newPassword } = req.body as { newPassword?: string };
     if (!newPassword) {

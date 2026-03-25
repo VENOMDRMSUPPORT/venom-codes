@@ -4,6 +4,7 @@ import { whmcsCall } from "../lib/whmcs-client.js";
 import { queryToWhmcsParams } from "../lib/query-params.js";
 import { mapDomainsResponse } from "../lib/whmcs-transforms.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireDomainOwnership } from "../middlewares/authorization.js";
 
 const router: IRouter = Router();
 
@@ -64,7 +65,7 @@ const nsSchema = z.object({
   nameservers: z.array(z.string()).min(2),
 });
 
-router.put("/:domainId/nameservers", async (req, res, next) => {
+router.put("/:domainId/nameservers", requireDomainOwnership, async (req, res, next) => {
   try {
     const body = nsSchema.parse(req.body);
     await whmcsCall("DomainUpdateNameservers", {
@@ -85,7 +86,7 @@ const renewSchema = z.object({
   years: z.number().int().positive().optional(),
 });
 
-router.post("/:domainId/renew", async (req, res, next) => {
+router.post("/:domainId/renew", requireDomainOwnership, async (req, res, next) => {
   try {
     const body = renewSchema.parse(req.body);
     await whmcsCall("DomainRenew", {
@@ -102,7 +103,7 @@ const autoRenewSchema = z.object({
   enabled: z.boolean(),
 });
 
-router.post("/:domainId/autorenew", async (req, res, next) => {
+router.post("/:domainId/autorenew", requireDomainOwnership, async (req, res, next) => {
   try {
     const body = autoRenewSchema.parse(req.body);
     await whmcsCall("DomainUpdateAutoRenew", {
@@ -115,7 +116,7 @@ router.post("/:domainId/autorenew", async (req, res, next) => {
   }
 });
 
-router.post("/:domainId/idprotection", async (req, res, next) => {
+router.post("/:domainId/idprotection", requireDomainOwnership, async (req, res, next) => {
   try {
     const { enable } = req.body as { enable?: boolean };
     await whmcsCall("DomainToggleIdProtect", {
@@ -128,7 +129,7 @@ router.post("/:domainId/idprotection", async (req, res, next) => {
   }
 });
 
-router.post("/:domainId/registrarlock", async (req, res, next) => {
+router.post("/:domainId/registrarlock", requireDomainOwnership, async (req, res, next) => {
   try {
     const { lock } = req.body as { lock?: boolean };
     await whmcsCall("DomainUpdateLockingStatus", {
@@ -145,7 +146,7 @@ const transferSchema = z.object({
   eppCode: z.string().min(1),
 });
 
-router.post("/:domainId/transfer", async (req, res, next) => {
+router.post("/:domainId/transfer", requireDomainOwnership, async (req, res, next) => {
   try {
     const body = transferSchema.parse(req.body);
     await whmcsCall("DomainTransfer", {
@@ -159,7 +160,7 @@ router.post("/:domainId/transfer", async (req, res, next) => {
 });
 
 /** GET /domains/:domainId/lock-status - Get domain registrar lock status */
-router.get("/:domainId/lock-status", async (req, res, next) => {
+router.get("/:domainId/lock-status", requireDomainOwnership, async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("DomainGetLockingStatus", {
       domainid: req.params.domainId,
@@ -174,7 +175,7 @@ router.get("/:domainId/lock-status", async (req, res, next) => {
 });
 
 /** PUT /domains/:domainId/lock-status - Enable/disable registrar lock */
-router.put("/:domainId/lock-status", async (req, res, next) => {
+router.put("/:domainId/lock-status", requireDomainOwnership, async (req, res, next) => {
   try {
     const { lock } = req.body as { lock?: boolean };
     await whmcsCall("DomainUpdateLockingStatus", {
@@ -188,7 +189,7 @@ router.put("/:domainId/lock-status", async (req, res, next) => {
 });
 
 /** GET /domains/:domainId/nameservers - Get domain nameservers */
-router.get("/:domainId/nameservers", async (req, res, next) => {
+router.get("/:domainId/nameservers", requireDomainOwnership, async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("DomainGetNameservers", {
       domainid: req.params.domainId,
@@ -206,7 +207,7 @@ router.get("/:domainId/nameservers", async (req, res, next) => {
 });
 
 /** GET /domains/:domainId/whois - Get domain WHOIS information */
-router.get("/:domainId/whois", async (req, res, next) => {
+router.get("/:domainId/whois", requireDomainOwnership, async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("DomainGetWhoisInfo", {
       domainid: req.params.domainId,
@@ -218,7 +219,7 @@ router.get("/:domainId/whois", async (req, res, next) => {
 });
 
 /** PUT /domains/:domainId/whois - Update domain WHOIS information */
-router.put("/:domainId/whois", async (req, res, next) => {
+router.put("/:domainId/whois", requireDomainOwnership, async (req, res, next) => {
   try {
     const { contactInformation } = req.body as { contactInformation?: Record<string, unknown> };
     await whmcsCall("DomainUpdateWhoisInfo", {
@@ -232,7 +233,7 @@ router.put("/:domainId/whois", async (req, res, next) => {
 });
 
 /** POST /domains/:domainId/epp - Request EPP code for domain transfer */
-router.post("/:domainId/epp", async (req, res, next) => {
+router.post("/:domainId/epp", requireDomainOwnership, async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("DomainRequestEPP", {
       domainid: req.params.domainId,
@@ -247,7 +248,7 @@ router.post("/:domainId/epp", async (req, res, next) => {
 });
 
 /** POST /domains/:domainId/register - Register a domain (admin only typically) */
-router.post("/:domainId/register", async (req, res, next) => {
+router.post("/:domainId/register", requireDomainOwnership, async (req, res, next) => {
   try {
     const {
       years = 1,
@@ -274,7 +275,7 @@ router.post("/:domainId/register", async (req, res, next) => {
 });
 
 /** POST /domains/:domainId/release - Release domain to another registrar */
-router.post("/:domainId/release", async (req, res, next) => {
+router.post("/:domainId/release", requireDomainOwnership, async (req, res, next) => {
   try {
     const { tag } = req.body as { tag?: string };
     if (!tag) {

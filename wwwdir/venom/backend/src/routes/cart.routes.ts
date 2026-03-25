@@ -88,6 +88,7 @@ router.post("/items", async (req, res, next) => {
 /** POST /cart/clear - Remove all pending orders (cart) */
 router.post("/clear", async (req, res, next) => {
   try {
+    console.log("[cart/clear] Request from client:", req.clientId);
     const ordersResult = await whmcsCall<Record<string, unknown>>("GetOrders", {
       userid: req.clientId!,
       status: "Pending",
@@ -95,14 +96,17 @@ router.post("/clear", async (req, res, next) => {
     const orders = ordersResult.orders as { order?: unknown } | undefined;
     const raw = orders?.order;
     const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    console.log("[cart/clear] Found orders to clear:", list.length);
     for (const order of list) {
       const orderId = String((order as Record<string, unknown>).id ?? "");
       if (orderId) {
+        console.log("[cart/clear] Deleting order:", orderId);
         await whmcsCall("DeleteOrder", { orderid: orderId });
       }
     }
     res.json({ success: true });
   } catch (e) {
+    console.error("[cart/clear] Error:", e);
     next(e);
   }
 });

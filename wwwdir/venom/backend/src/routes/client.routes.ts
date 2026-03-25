@@ -3,6 +3,7 @@ import { z } from "zod";
 import { whmcsCall } from "../lib/whmcs-client.js";
 import { mapWhmcsClientToProfile } from "../lib/whmcs-transforms.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireContactOwnership } from "../middlewares/authorization.js";
 
 const router: IRouter = Router();
 router.use(requireAuth);
@@ -110,11 +111,12 @@ router.post("/contacts", async (req, res, next) => {
   }
 });
 
-router.put("/contacts/:contactId", async (req, res, next) => {
+router.put("/contacts/:contactId", requireContactOwnership, async (req, res, next) => {
   try {
+    const { contactId } = req.params;
     const body = contactInputSchema.parse(req.body);
     await whmcsCall("UpdateContact", {
-      contactid: req.params.contactId,
+      contactid: contactId,
       firstname: body.firstname,
       lastname: body.lastname,
       email: body.email,
@@ -126,10 +128,11 @@ router.put("/contacts/:contactId", async (req, res, next) => {
   }
 });
 
-router.delete("/contacts/:contactId", async (req, res, next) => {
+router.delete("/contacts/:contactId", requireContactOwnership, async (req, res, next) => {
   try {
+    const { contactId } = req.params;
     await whmcsCall("DeleteContact", {
-      contactid: req.params.contactId,
+      contactid: contactId,
     });
     res.json({ success: true });
   } catch (e) {
