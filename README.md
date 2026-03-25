@@ -5,10 +5,10 @@
 # VENOM CODES
 **Advanced IPTV Control Platform & Streaming Solutions**
 
-[![Platform](https://img.shields.io/badge/Platform-IPTV-blue)](https://venom-codes.com)
+[![Platform](https://img.shields.io/badge/Platform-IPTV-blue)](http://venom-codes.test)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0.0-orange)](https://github.com/venom-codes)
-[![Support](https://img.shields.io/badge/Support-24/7-brightgreen)](https://support.venom-codes.com)
+[![Support](https://img.shields.io/badge/Support-24/7-brightgreen)](http://support.venom-codes.test)
 
 *A professional-grade, self-developed IPTV management and streaming operations platform built for operators who need stability, scalability, and control.*
 
@@ -465,10 +465,10 @@ pm2 logs venom
 
 ### Support Channels
 
-- **Documentation:** [docs.venom-codes.com](https://docs.venom-codes.com)
-- **Email Support:** support@venom-codes.com
-- **Ticket System:** [support.venom-codes.com](https://support.venom-codes.com)
-- **Community Forum:** [community.venom-codes.com](https://community.venom-codes.com)
+- **Documentation:** [docs.venom-codes.test](http://docs.venom-codes.test)
+- **Email Support:** support@venom-codes.test
+- **Ticket System:** [support.venom-codes.test](http://support.venom-codes.test)
+- **Community Forum:** [community.venom-codes.test](http://community.venom-codes.test)
 
 ### Response Times
 
@@ -493,7 +493,7 @@ When reporting issues, please include:
 
 We appreciate interest in contributing to VENOM CODES. As this is a commercial platform, please contact us at:
 
-**developers@venom-codes.com**
+**developers@venom-codes.test**
 
 Before submitting any contributions, please review our:
 - Code of Conduct
@@ -510,7 +510,7 @@ Copyright © 2025 VENOM CODES. All rights reserved.
 
 This software and associated documentation are the confidential and proprietary information of VENOM CODES. Unauthorized copying, distribution, or use of this software is strictly prohibited.
 
-For licensing inquiries, contact: **legal@venom-codes.com**
+For licensing inquiries, contact: **legal@venom-codes.test**
 
 ---
 
@@ -518,11 +518,11 @@ For licensing inquiries, contact: **legal@venom-codes.com**
 
 | Resource | URL |
 |----------|-----|
-| **Website** | [venom-codes.com](https://venom-codes.com) |
-| **Documentation** | [docs.venom-codes.com](https://docs.venom-codes.com) |
-| **Support** | [support.venom-codes.com](https://support.venom-codes.com) |
-| **Status** | [status.venom-codes.com](https://status.venom-codes.com) |
-| **Blog** | [blog.venom-codes.com](https://blog.venom-codes.com) |
+| **Website** | [venom-codes.test](http://venom-codes.test) |
+| **Documentation** | [docs.venom-codes.test](http://docs.venom-codes.test) |
+| **Support** | [support.venom-codes.test](http://support.venom-codes.test) |
+| **Status** | [status.venom-codes.test](http://status.venom-codes.test) |
+| **Blog** | [blog.venom-codes.test](http://blog.venom-codes.test) |
 
 ---
 
