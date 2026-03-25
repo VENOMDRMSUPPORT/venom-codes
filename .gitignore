@@ -57,6 +57,7 @@ php/var/**
 wwwdir/vendor/**
 wwwdir/**/vendor/**
 wwwdir/phpmyadmin/**
+wwwdir/whmcs/templates_c/
 wwwdir/templates_c/**
 wwwdir/downloads/**
 wwwdir/attachments/**

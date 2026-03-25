@@ -4,24 +4,22 @@ import { whmcsCall } from "../lib/whmcs-client.js";
 
 const router: IRouter = Router();
 
-/** POST /notifications/trigger - Trigger a notification event */
+const triggerSchema = z.object({
+  event: z.string().min(1),
+  parameters: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+});
+
+/** POST /notifications/trigger — WHMCS TriggerNotificationEvent (admin API) */
 router.post("/trigger", async (req, res, next) => {
   try {
-    const { event, parameters } = req.body as {
-      event?: string;
-      parameters?: Record<string, unknown>;
-    };
-    
-    if (!event) {
-      res.status(400).json({ error: "bad_request", message: "Event is required" });
-      return;
+    const body = triggerSchema.parse(req.body);
+    const flat: Record<string, string> = { event: body.event };
+    if (body.parameters) {
+      for (const [k, v] of Object.entries(body.parameters)) {
+        flat[k] = String(v);
+      }
     }
-    
-    const result = await whmcsCall<Record<string, unknown>>("TriggerNotificationEvent", {
-      event,
-      ...parameters,
-    });
-    
+    const result = await whmcsCall<Record<string, unknown>>("TriggerNotificationEvent", flat);
     res.json({
       success: result.result === "success",
       raw: result,
@@ -31,30 +29,20 @@ router.post("/trigger", async (req, res, next) => {
   }
 });
 
-/** GET /notifications/settings - Get notification settings */
-router.get("/settings", async (_req, res, next) => {
-  try {
-    // This might need custom implementation based on WHMCS notification settings
-    res.json({
-      message: "Notification settings endpoint - configure in WHMCS admin panel",
-    });
-  } catch (e) {
-    next(e);
-  }
+router.get("/settings", (_req, res) => {
+  res.status(501).json({
+    error: "not_implemented",
+    message:
+      "WHMCS notification preferences are not exposed as a single External API action. Configure in WHMCS Admin or via applicable WHMCS APIs for your version.",
+  });
 });
 
-/** POST /notifications/settings - Update notification settings */
-router.post("/settings", async (req, res, next) => {
-  try {
-    // This might need custom implementation based on WHMCS notification settings
-    const { settings } = req.body as { settings?: Record<string, unknown> };
-    res.json({
-      success: true,
-      message: "Notification settings updated",
-    });
-  } catch (e) {
-    next(e);
-  }
+router.post("/settings", (_req, res) => {
+  res.status(501).json({
+    error: "not_implemented",
+    message:
+      "Updating notification settings via this API is not implemented. Use WHMCS Admin.",
+  });
 });
 
 export default router;

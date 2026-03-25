@@ -111,18 +111,32 @@ router.delete("/credentials/:credentialId", requireAuth, async (req, res, next) 
   }
 });
 
-/** POST /oauth/token - OAuth token endpoint (for token exchange) */
-router.post("/token", async (req, res, next) => {
+const ssoTokenSchema = z.object({
+  destination: z.string().optional(),
+  serviceId: z.string().optional(),
+  domainId: z.string().optional(),
+  userId: z.string().optional(),
+  ssoRedirectPath: z.string().optional(),
+});
+
+/**
+ * POST /oauth/token — WHMCS CreateSsoToken (client SSO), not OAuth2 token exchange.
+ * @see https://developers.whmcs.com/api-reference/createssotoken/
+ */
+router.post("/token", requireAuth, async (req, res, next) => {
   try {
-    // This is typically handled by WHMCS's internal OAuth server
-    // Just proxy to WHMCS if needed
-    const { grant_type, code, redirect_uri, client_id, client_secret } = req.body;
-    
-    // For now, return a placeholder - this usually requires internal WHMCS handling
-    res.json({
-      error: "unsupported_grant_type",
-      message: "OAuth token exchange should be handled by WHMCS internal endpoints",
-    });
+    const body = ssoTokenSchema.parse(req.body ?? {});
+    const params: Record<string, string> = {
+      client_id: req.clientId!,
+    };
+    if (body.destination) params.destination = body.destination;
+    if (body.serviceId) params.service_id = body.serviceId;
+    if (body.domainId) params.domain_id = body.domainId;
+    if (body.userId) params.user_id = body.userId;
+    if (body.ssoRedirectPath) params.sso_redirect_path = body.ssoRedirectPath;
+
+    const result = await whmcsCall<Record<string, unknown>>("CreateSsoToken", params);
+    res.json(result);
   } catch (e) {
     next(e);
   }

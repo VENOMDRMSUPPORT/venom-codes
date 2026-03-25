@@ -476,7 +476,8 @@ export function InvoiceDetail() {
 // ── Quotes List ───────────────────────────────────────────────────────────────
 
 export function QuotesList() {
-  const { data: quotes, isLoading, isError, refetch } = useGetQuotes();
+  const { data: quotesResponse, isLoading, isError, refetch } = useGetQuotes();
+  const quotes = quotesResponse?.quotes ?? [];
 
   return (
     <DashboardLayout title="Quotes">
@@ -792,7 +793,8 @@ function orderStatusStyle(status: string) {
 }
 
 export function OrdersList() {
-  const { data: orders, isLoading, isError, refetch } = useGetOrders();
+  const { data: ordersResponse, isLoading, isError, refetch } = useGetOrders();
+  const orders = ordersResponse?.orders ?? [];
   const [, navigate] = useLocation();
 
   return (

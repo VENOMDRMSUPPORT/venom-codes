@@ -22,7 +22,18 @@ router.get("/", async (req, res, next) => {
     if (sid) {
       services = services.filter((s) => s.id === sid);
     }
-    res.json({ services });
+    const limitRaw = req.query.limit;
+    const limit =
+      typeof limitRaw === "string"
+        ? Number.parseInt(limitRaw, 10) || 100
+        : typeof limitRaw === "number"
+          ? limitRaw
+          : 100;
+    res.json({
+      services,
+      total: services.length,
+      limit,
+    });
   } catch (e) {
     next(e);
   }
@@ -88,16 +99,22 @@ router.post("/:serviceId/cancel", async (req, res, next) => {
 
 const upgradeBody = z.object({
   newProductId: z.string().optional(),
+  newproductid: z.string().optional(),
   billingCycle: z.string().optional(),
+  billingcycle: z.string().optional(),
+  paymentmethod: z.string().optional(),
 });
 
 router.post("/:serviceId/upgrade", async (req, res, next) => {
   try {
     const body = upgradeBody.parse(req.body);
+    const pid = body.newProductId ?? body.newproductid;
+    const billingcycle = body.billingCycle ?? body.billingcycle;
     await whmcsCall("UpgradeProduct", {
       serviceid: req.params.serviceId,
-      pid: body.newProductId,
-      billingcycle: body.billingCycle,
+      ...(pid && { pid }),
+      ...(billingcycle && { billingcycle }),
+      ...(body.paymentmethod && { paymentmethod: body.paymentmethod }),
     });
     res.json({ success: true });
   } catch (e) {

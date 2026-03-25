@@ -160,7 +160,7 @@ paths:
     get:
       tags: [Client]
       summary: List contacts
-      operationId: listContacts
+      operationId: getClientContacts
       security: [{ bearerAuth: [] }]
       responses:
         "200":
@@ -174,7 +174,7 @@ paths:
     post:
       tags: [Client]
       summary: Add contact
-      operationId: addContact
+      operationId: addClientContact
       security: [{ bearerAuth: [] }]
       requestBody:
         content:
@@ -184,11 +184,15 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/client/contacts/{contactId}:
     put:
       tags: [Client]
       summary: Update contact
-      operationId: updateContact
+      operationId: updateClientContact
       security: [{ bearerAuth: [] }]
       parameters:
         - name: contactId
@@ -204,10 +208,14 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
     delete:
       tags: [Client]
       summary: Delete contact
-      operationId: deleteContact
+      operationId: deleteClientContact
       security: [{ bearerAuth: [] }]
       parameters:
         - name: contactId
@@ -218,6 +226,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/client/change-password:
     post:
       tags: [Client]
@@ -232,6 +244,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/client/email-preferences:
     get:
       tags: [Client]
@@ -258,6 +274,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/client/credits:
     get:
       tags: [Client]
@@ -267,6 +287,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/client/dashboard:
     get:
       tags: [Client]
@@ -284,16 +308,31 @@ paths:
     get:
       tags: [Services]
       summary: List services
-      operationId: listServices
+      operationId: getServices
       security: [{ bearerAuth: [] }]
       parameters:
         - name: status
           in: query
           schema:
             type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServicesListResponse"
   /api/services/{serviceId}:
     get:
       tags: [Services]
@@ -309,15 +348,39 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/invoices:
     get:
       tags: [Billing]
       summary: List invoices
-      operationId: listInvoices
+      operationId: getInvoices
       security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceListResponse"
   /api/invoices/{invoiceId}:
     get:
       tags: [Billing]
@@ -333,15 +396,32 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/tickets:
     get:
       tags: [Support]
       summary: List tickets
-      operationId: listTickets
+      operationId: getTickets
       security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: deptid
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketListResponse"
     post:
       tags: [Support]
       summary: Open ticket
@@ -355,6 +435,10 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/tickets/departments:
     get:
       tags: [Support]
@@ -364,15 +448,23 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketDepartmentsResponse"
   /api/domains:
     get:
       tags: [Domains]
       summary: List domains
-      operationId: listDomains
+      operationId: getDomains
       security: [{ bearerAuth: [] }]
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/domains/whois:
     get:
       tags: [Domains]
@@ -387,14 +479,39 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/products:
     get:
       tags: [Catalog]
       summary: Product catalog
-      operationId: listProducts
+      operationId: getProducts
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+  /api/products/{productId}:
+    get:
+      tags: [Catalog]
+      summary: Single product
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/cart:
     get:
       tags: [Cart]
@@ -404,14 +521,22 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
   /api/announcements:
     get:
       tags: [Public]
       summary: Announcements
-      operationId: listAnnouncements
+      operationId: getAnnouncements
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementListResponse"
   /api/knowledgebase:
     get:
       tags: [Public]
@@ -420,14 +545,887 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KbIndexResponse"
   /api/knowledgebase/search:
     get:
       tags: [Public]
       summary: Search KB
       operationId: searchKnowledgebase
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KbSearchResponse"
+  /api/tickets/statuses:
+    get:
+      tags: [Support]
+      summary: WHMCS GetSupportStatuses
+      operationId: getTicketStatuses
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/tickets/counts:
+    get:
+      tags: [Support]
+      summary: WHMCS GetTicketCounts
+      operationId: getTicketCounts
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/products/groups:
+    get:
+      tags: [Catalog]
+      summary: Product groups from GetProducts
+      operationId: getProductGroups
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/products/pricing:
+    get:
+      tags: [Catalog]
+      summary: WHMCS GetTLDPricing
+      operationId: getTldPricing
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/users/permissions-list:
+    get:
+      tags: [Users]
+      summary: WHMCS GetPermissionsList
+      operationId: getPermissionsList
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/paymethods/capture:
+    post:
+      tags: [Billing]
+      summary: WHMCS CapturePayment (invoiceid)
+      operationId: capturePayment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceId]
+              properties:
+                invoiceId:
+                  type: string
+                cvv:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/billing/cycles:
+    get:
+      tags: [Billing]
+      summary: Standard WHMCS billing cycle names (static)
+      operationId: getBillingCycles
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/billing/gateways:
+    get:
+      tags: [Billing]
+      summary: WHMCS GetPaymentMethods (active gateways)
+      operationId: getPaymentGateways
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/oauth/token:
+    post:
+      tags: [Auth]
+      summary: WHMCS CreateSsoToken (SSO), not OAuth2 token URL
+      operationId: createSsoToken
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destination:
+                  type: string
+                serviceId:
+                  type: string
+                domainId:
+                  type: string
+                userId:
+                  type: string
+                ssoRedirectPath:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/invoices/{invoiceId}/pay:
+    post:
+      tags: [Billing]
+      operationId: payInvoice
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/quotes:
+    get:
+      tags: [Billing]
+      operationId: getQuotes
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteListResponse"
+    post:
+      tags: [Billing]
+      operationId: createQuote
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/quotes/{quoteId}:
+    get:
+      tags: [Billing]
+      operationId: getQuote
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+    put:
+      tags: [Billing]
+      operationId: updateQuote
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+    delete:
+      tags: [Billing]
+      operationId: deleteQuote
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/quotes/{quoteId}/accept:
+    post:
+      tags: [Billing]
+      operationId: acceptQuote
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/quotes/{quoteId}/send:
+    post:
+      tags: [Billing]
+      operationId: sendQuote
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/orders:
+    get:
+      tags: [Billing]
+      operationId: getOrders
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderListResponse"
+  /api/orders/{orderId}:
+    get:
+      tags: [Billing]
+      operationId: getOrder
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/orders/{orderId}/cancel:
+    post:
+      tags: [Billing]
+      operationId: cancelOrder
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/paymethods:
+    get:
+      tags: [Billing]
+      operationId: getPayMethods
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayMethodCard"
+    post:
+      tags: [Billing]
+      operationId: addPayMethod
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddPayMethodBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/paymethods/{payMethodId}:
+    delete:
+      tags: [Billing]
+      operationId: deletePayMethod
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: payMethodId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/cart/items:
+    post:
+      tags: [Cart]
+      operationId: addCartItem
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCartItemBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddCartItemResponse"
+  /api/cart/items/{itemId}:
+    delete:
+      tags: [Cart]
+      operationId: removeCartItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/cart/clear:
+    post:
+      tags: [Cart]
+      operationId: clearCart
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/cart/checkout:
+    post:
+      tags: [Cart]
+      operationId: checkoutCart
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/tickets/{ticketId}:
+    get:
+      tags: [Support]
+      operationId: getTicket
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketDetail"
+  /api/tickets/{ticketId}/reply:
+    post:
+      tags: [Support]
+      operationId: replyToTicket
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketReplyBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/tickets/{ticketId}/close:
+    post:
+      tags: [Support]
+      operationId: closeTicket
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/services/{serviceId}/addons:
+    get:
+      tags: [Services]
+      operationId: getServiceAddons
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/services/{serviceId}/cancel:
+    post:
+      tags: [Services]
+      operationId: cancelService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelServiceBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/services/{serviceId}/suspend:
+    post:
+      tags: [Services]
+      operationId: suspendService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/services/{serviceId}/unsuspend:
+    post:
+      tags: [Services]
+      operationId: unsuspendService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/services/{serviceId}/upgrade:
+    post:
+      tags: [Services]
+      operationId: upgradeService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpgradeServiceBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /api/services/{serviceId}/terminate:
+    post:
+      tags: [Services]
+      operationId: terminateService
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}:
+    get:
+      tags: [Domains]
+      operationId: getDomain
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/nameservers:
+    put:
+      tags: [Domains]
+      operationId: updateDomainNameservers
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nameservers]
+              properties:
+                nameservers:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 2
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/renew:
+    post:
+      tags: [Domains]
+      operationId: renewDomain
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                years:
+                  type: integer
+                  minimum: 1
+                  default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/autorenew:
+    post:
+      tags: [Domains]
+      operationId: toggleDomainAutoRenew
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/idprotection:
+    post:
+      tags: [Domains]
+      operationId: toggleDomainIdProtection
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enable:
+                  type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/registrarlock:
+    post:
+      tags: [Domains]
+      operationId: toggleDomainRegistrarLock
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lock:
+                  type: boolean
+                  default: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/domains/{domainId}/transfer:
+    post:
+      tags: [Domains]
+      operationId: transferDomain
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: domainId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eppCode]
+              properties:
+                eppCode:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnyJson"
+  /api/announcements/{announcementId}:
+    get:
+      tags: [Public]
+      operationId: getAnnouncement
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementDetail"
+  /api/products/{productId}/addons:
+    get:
+      tags: [Catalog]
+      operationId: getProductAddons
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductAddonsResponse"
+  /api/knowledgebase/categories:
+    get:
+      tags: [Public]
+      operationId: getKnowledgebaseCategories
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KbCategoriesResponse"
+  /api/knowledgebase/categories/{categoryId}:
+    get:
+      tags: [Public]
+      operationId: getKbCategory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KbCategoryResponse"
+        "404":
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/knowledgebase/categories/{categoryId}/articles/{articleId}:
+    get:
+      tags: [Public]
+      operationId: getKbArticle
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: articleId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KbArticleResponse"
+        "404":
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -457,6 +1455,9 @@ components:
           type: boolean
         message:
           type: string
+    AnyJson:
+      type: object
+      additionalProperties: true
     LoginRequest:
       type: object
       required: [email, password]
@@ -506,6 +1507,32 @@ components:
           type: string
         status:
           type: string
+        companyname:
+          type: string
+          nullable: true
+        phonenumber:
+          type: string
+        address1:
+          type: string
+        address2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        state:
+          type: string
+        postcode:
+          type: string
+        country:
+          type: string
+        currency:
+          type: number
+        currencyCode:
+          type: string
+        credit:
+          type: string
+        createdAt:
+          type: string
     UpdateClientRequest:
       type: object
       properties:
@@ -517,8 +1544,32 @@ components:
           type: string
     Contact:
       type: object
+      required: [id, firstname, lastname, email]
+      properties:
+        id:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        phonenumber:
+          type: string
+        subaccount:
+          type: boolean
     ContactInput:
       type: object
+      required: [firstname, lastname, email]
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        phonenumber:
+          type: string
     ChangePasswordRequest:
       type: object
       properties:
@@ -528,7 +1579,500 @@ components:
           type: string
     EmailPreferences:
       type: object
+      required:
+        - generalEmails
+        - invoiceEmails
+        - productEmails
+        - domainEmails
+        - supportEmails
+        - marketingEmails
+      properties:
+        generalEmails:
+          type: boolean
+        invoiceEmails:
+          type: boolean
+        productEmails:
+          type: boolean
+        domainEmails:
+          type: boolean
+        supportEmails:
+          type: boolean
+        marketingEmails:
+          type: boolean
     DashboardSummary:
       type: object
     CreateTicketRequest:
       type: object
+      required: [departmentId, subject, message]
+      properties:
+        departmentId:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        priority:
+          type: string
+    InvoiceListItem:
+      type: object
+      required: [id, status, total]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+        dueDate:
+          type: string
+        total:
+          type: string
+        subtotal:
+          type: string
+        taxAmount:
+          type: string
+        credit:
+          type: string
+        paymentMethod:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    InvoiceListResponse:
+      type: object
+      required: [invoices, total]
+      properties:
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceListItem"
+        total:
+          type: number
+    ServiceListItem:
+      type: object
+      required: [id, productName, status, username, notes]
+      properties:
+        id:
+          type: string
+        productId:
+          type: string
+        productName:
+          type: string
+        domain:
+          type: string
+        status:
+          type: string
+        billingCycle:
+          type: string
+        nextDueDate:
+          type: string
+        amount:
+          type: string
+        username:
+          type: string
+          nullable: true
+        dedicatedIp:
+          type: string
+          nullable: true
+        regDate:
+          type: string
+        firstPaymentAmount:
+          type: string
+        notes:
+          type: string
+          nullable: true
+    ServicesListResponse:
+      type: object
+      required: [services, total, limit]
+      properties:
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceListItem"
+        total:
+          type: number
+        limit:
+          type: number
+    TicketSummary:
+      type: object
+      required: [id, subject, status, priority]
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+        department:
+          type: string
+        priority:
+          type: string
+        lastUpdated:
+          type: string
+    TicketListResponse:
+      type: object
+      required: [tickets]
+      properties:
+        tickets:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketSummary"
+    TicketReplyItem:
+      type: object
+      required: [id, isStaff, createdAt, message]
+      properties:
+        id:
+          type: string
+        authorName:
+          type: string
+        isStaff:
+          type: boolean
+        createdAt:
+          type: string
+        message:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              url:
+                type: string
+    TicketDetail:
+      type: object
+      required: [id, subject, status, priority, createdAt, replies]
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        department:
+          type: string
+        createdAt:
+          type: string
+        message:
+          type: string
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketReplyItem"
+    TicketDepartmentsResponse:
+      type: object
+      required: [departments]
+      properties:
+        departments:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+    TicketReplyBody:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    QuoteListItem:
+      type: object
+      required: [id, subject, status, total]
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+        expiryDate:
+          type: string
+        total:
+          type: string
+        notes:
+          type: string
+          nullable: true
+    QuoteListResponse:
+      type: object
+      required: [quotes]
+      properties:
+        quotes:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteListItem"
+    OrderListItem:
+      type: object
+      required: [id, status, total]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+        total:
+          type: string
+        paymentMethod:
+          type: string
+        invoiceId:
+          type: string
+    OrderListResponse:
+      type: object
+      required: [orders]
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderListItem"
+    PayMethodCard:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        gateway:
+          type: string
+        description:
+          type: string
+        lastFour:
+          type: string
+        expiry:
+          type: string
+    AddPayMethodBody:
+      type: object
+      required: [gateway, description]
+      properties:
+        gateway:
+          type: string
+        description:
+          type: string
+        token:
+          type: string
+    CatalogProduct:
+      type: object
+      required: [id, name, pricing]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        pricing:
+          type: object
+          additionalProperties: true
+    ProductCatalogResponse:
+      type: object
+      required: [products]
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogProduct"
+    ProductAddon:
+      type: object
+      required: [id, name, pricing]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        pricing:
+          type: object
+          additionalProperties: true
+    ProductAddonsResponse:
+      type: object
+      required: [addons]
+      properties:
+        addons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductAddon"
+    AnnouncementListItem:
+      type: object
+      required: [id, title, announcement]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        announcement:
+          type: string
+        date:
+          type: string
+    AnnouncementListResponse:
+      type: object
+      required: [announcements]
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementListItem"
+    AnnouncementDetail:
+      type: object
+      required: [id, title, announcement]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        announcement:
+          type: string
+        date:
+          type: string
+    AddCartItemBody:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: string
+        billingCycle:
+          type: string
+        domain:
+          type: string
+        quantity:
+          type: integer
+        addons:
+          type: array
+          items:
+            type: object
+            required: [id, quantity]
+            properties:
+              id:
+                type: string
+              quantity:
+                type: integer
+    AddCartItemResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        orderId:
+          type: string
+          nullable: true
+    CancelServiceBody:
+      type: object
+      properties:
+        reason:
+          type: string
+        type:
+          type: string
+    UpgradeServiceBody:
+      type: object
+      properties:
+        newProductId:
+          type: string
+        newproductid:
+          type: string
+        billingCycle:
+          type: string
+        billingcycle:
+          type: string
+        paymentmethod:
+          type: string
+    KbCategory:
+      type: object
+      required: [id, parentid, name, language]
+      properties:
+        id:
+          type: integer
+        parentid:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        language:
+          type: string
+    KbCategoryWithCount:
+      type: object
+      required: [id, parentid, name, language, articleCount]
+      properties:
+        id:
+          type: integer
+        parentid:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        language:
+          type: string
+        articleCount:
+          type: integer
+    KbArticle:
+      type: object
+      required: [id, title, article, views, useful, votes, catid, language]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        article:
+          type: string
+        views:
+          type: integer
+        useful:
+          type: integer
+        votes:
+          type: integer
+        catid:
+          type: integer
+        parentid:
+          type: integer
+        language:
+          type: string
+    KbIndexResponse:
+      type: object
+      required: [categories]
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/KbCategoryWithCount"
+    KbCategoriesResponse:
+      type: object
+      required: [categories]
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/KbCategory"
+    KbSearchResponse:
+      type: object
+      required: [articles]
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/KbArticle"
+    KbCategoryResponse:
+      type: object
+      required: [category, articles]
+      properties:
+        category:
+          $ref: "#/components/schemas/KbCategory"
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/KbArticle"
+    KbArticleResponse:
+      type: object
+      required: [category, article]
+      properties:
+        category:
+          $ref: "#/components/schemas/KbCategory"
+        article:
+          $ref: "#/components/schemas/KbArticle"

@@ -240,18 +240,165 @@ router.get("/credits", async (req, res, next) => {
 
 router.get("/dashboard", async (req, res, next) => {
   try {
-    const stats = await whmcsCall<Record<string, unknown>>("GetClientsStats", {
-      userid: req.clientId!,
-    });
+    // Parallel fetch all dashboard data
+    const [
+      productsResult,
+      invoicesResult,
+      ticketCounts,
+      domainsResult,
+      ticketsResult,
+      announcementsResult,
+    ] = await Promise.allSettled([
+      whmcsCall<Record<string, unknown>>("GetClientsProducts", {
+        clientid: req.clientId!,
+        limit: 5,
+      }),
+      whmcsCall<Record<string, unknown>>("GetInvoices", {
+        userid: req.clientId!,
+        limit: 5,
+      }),
+      whmcsCall<Record<string, unknown>>("GetTicketCounts", {
+        clientid: req.clientId!,
+      }),
+      whmcsCall<Record<string, unknown>>("GetClientsDomains", {
+        clientid: req.clientId!,
+        limit: 100,
+      }),
+      whmcsCall<Record<string, unknown>>("GetTickets", {
+        clientid: req.clientId!,
+        limit: 5,
+      }),
+      whmcsCall<Record<string, unknown>>("GetAnnouncements", {
+        limit: 3,
+      }),
+    ]);
+
+    // Extract active services count
+    let activeServices = 0;
+    if (productsResult.status === "fulfilled") {
+      const products = productsResult.value.products as { product?: unknown } | undefined;
+      const raw = products?.product ?? productsResult.value.product;
+      const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+      activeServices = list.filter(
+        (p: Record<string, unknown>) => String(p.status ?? "") === "Active"
+      ).length;
+    }
+
+    // Extract unpaid invoices and amount
+    let pendingInvoices = 0;
+    let pendingInvoicesAmount = "0";
+    const recentInvoices: Array<{
+      id: string;
+      total: string;
+      status: string;
+      dueDate?: string;
+    }> = [];
+
+    if (invoicesResult.status === "fulfilled") {
+      const invoices = invoicesResult.value.invoices as { invoice?: unknown } | undefined;
+      const raw = invoices?.invoice ?? invoicesResult.value.invoice;
+      const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+      for (const inv of list as Record<string, unknown>[]) {
+        const status = String(inv.status ?? "");
+        const isUnpaid = status === "Unpaid";
+        if (isUnpaid && pendingInvoices < 5) {
+          pendingInvoices++;
+          const amount = String(inv.total ?? "0");
+          pendingInvoicesAmount = String(
+            parseFloat(pendingInvoicesAmount) + parseFloat(amount)
+          );
+        }
+        if (recentInvoices.length < 5) {
+          recentInvoices.push({
+            id: String(inv.id ?? inv.invoiceid ?? ""),
+            total: String(inv.total ?? "0"),
+            status: status,
+            dueDate: inv.duedate != null ? String(inv.duedate) : undefined,
+          });
+        }
+      }
+    }
+
+    // Extract open tickets count
+    let openTickets = 0;
+    if (ticketCounts.status === "fulfilled") {
+      openTickets = Number(ticketCounts.value.open ?? ticketCounts.value.total ?? 0);
+    }
+
+    // Extract active domains count
+    let activeDomains = 0;
+    if (domainsResult.status === "fulfilled") {
+      const domains = domainsResult.value.domains as { domain?: unknown } | undefined;
+      const raw = domains?.domain ?? domainsResult.value.domain;
+      const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+      activeDomains = list.filter(
+        (d: Record<string, unknown>) => String(d.status ?? "") === "Active"
+      ).length;
+    }
+
+    // Extract recent tickets
+    const recentTickets: Array<{
+      id: string;
+      subject: string;
+      status: string;
+      lastUpdated?: string;
+    }> = [];
+
+    if (ticketsResult.status === "fulfilled") {
+      const tickets = ticketsResult.value.tickets as { ticket?: unknown } | undefined;
+      const raw = tickets?.ticket ?? ticketsResult.value.ticket;
+      const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+      for (const t of list as Record<string, unknown>[]) {
+        if (recentTickets.length >= 5) break;
+        recentTickets.push({
+          id: String(t.id ?? t.tid ?? ""),
+          subject: String(t.subject ?? ""),
+          status: String(t.status ?? ""),
+          lastUpdated:
+            t.lastreply != null
+              ? String(t.lastreply)
+              : t.date != null
+                ? String(t.date)
+                : undefined,
+        });
+      }
+    }
+
+    // Extract recent announcements
+    const recentAnnouncements: Array<{
+      id: string;
+      title: string;
+      date?: string;
+    }> = [];
+
+    if (announcementsResult.status === "fulfilled") {
+      const announcements = announcementsResult.value.announcements as {
+        announcement?: unknown;
+      } | undefined;
+      const raw = announcements?.announcement ?? announcementsResult.value.announcement;
+      const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+      for (const a of list as Record<string, unknown>[]) {
+        if (recentAnnouncements.length >= 3) break;
+        recentAnnouncements.push({
+          id: String(a.id ?? ""),
+          title: String(a.title ?? ""),
+          date: a.date != null ? String(a.date) : undefined,
+        });
+      }
+    }
+
     res.json({
-      activeServices: Number(stats.productsnum ?? stats.activeservices ?? 0),
-      pendingInvoices: Number(stats.unpaidinvoices ?? stats.pendinginvoices ?? 0),
-      pendingInvoicesAmount: String(stats.pendinginvoicesamount ?? "0"),
-      openTickets: Number(stats.opentickets ?? 0),
-      activeDomains: Number(stats.activedomains ?? stats.domainsnum ?? 0),
-      recentInvoices: [],
-      recentTickets: [],
-      recentAnnouncements: [],
+      activeServices,
+      pendingInvoices,
+      pendingInvoicesAmount,
+      openTickets,
+      activeDomains,
+      recentInvoices,
+      recentTickets,
+      recentAnnouncements,
     });
   } catch (e) {
     next(e);

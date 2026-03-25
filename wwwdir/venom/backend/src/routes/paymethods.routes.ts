@@ -1,6 +1,10 @@
+/**
+ * Client pay methods — static paths (e.g. POST /capture) before `/:payMethodId`.
+ */
 import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { whmcsCall } from "../lib/whmcs-client.js";
+import { mapPayMethodsList } from "../lib/whmcs-transforms.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router: IRouter = Router();
@@ -11,7 +15,7 @@ router.get("/", async (req, res, next) => {
     const result = await whmcsCall<Record<string, unknown>>("GetPayMethods", {
       clientid: req.clientId!,
     });
-    res.json(result);
+    res.json(mapPayMethodsList(result));
   } catch (e) {
     next(e);
   }
@@ -30,15 +34,20 @@ router.post("/", async (req, res, next) => {
 });
 
 const captureSchema = z.object({
-  amount: z.number().optional(),
+  invoiceId: z.string().min(1),
+  cvv: z.string().optional(),
 });
 
-router.post("/:payMethodId/capture", async (req, res, next) => {
+/**
+ * POST /paymethods/capture — WHMCS CapturePayment (invoiceid, optional cvv).
+ * @see https://developers.whmcs.com/api-reference/capturepayment/
+ */
+router.post("/capture", async (req, res, next) => {
   try {
-    captureSchema.parse(req.body);
+    const body = captureSchema.parse(req.body);
     await whmcsCall("CapturePayment", {
-      paymentid: req.params.payMethodId,
-      ...req.body,
+      invoiceid: body.invoiceId,
+      ...(body.cvv !== undefined && body.cvv !== "" ? { cvv: body.cvv } : {}),
     });
     res.json({ success: true });
   } catch (e) {

@@ -58,6 +58,9 @@ const addItemSchema = z.object({
   domain: z.string().optional(),
   quantity: z.number().int().positive().optional(),
   configOptions: z.record(z.union([z.string(), z.number()])).optional(),
+  addons: z
+    .array(z.object({ id: z.string(), quantity: z.number().int().positive() }))
+    .optional(),
 });
 
 /** POST /cart/items - Add item to cart (creates pending order) */
@@ -77,6 +80,28 @@ router.post("/items", async (req, res, next) => {
       success: true,
       orderId: (result as { orderid?: unknown }).orderid ?? ((result as { orderids?: unknown[] }).orderids?.[0] ?? null),
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** POST /cart/clear - Remove all pending orders (cart) */
+router.post("/clear", async (req, res, next) => {
+  try {
+    const ordersResult = await whmcsCall<Record<string, unknown>>("GetOrders", {
+      userid: req.clientId!,
+      status: "Pending",
+    });
+    const orders = ordersResult.orders as { order?: unknown } | undefined;
+    const raw = orders?.order;
+    const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    for (const order of list) {
+      const orderId = String((order as Record<string, unknown>).id ?? "");
+      if (orderId) {
+        await whmcsCall("DeleteOrder", { orderid: orderId });
+      }
+    }
+    res.json({ success: true });
   } catch (e) {
     next(e);
   }

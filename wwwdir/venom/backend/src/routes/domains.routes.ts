@@ -98,6 +98,23 @@ router.post("/:domainId/renew", async (req, res, next) => {
   }
 });
 
+const autoRenewSchema = z.object({
+  enabled: z.boolean(),
+});
+
+router.post("/:domainId/autorenew", async (req, res, next) => {
+  try {
+    const body = autoRenewSchema.parse(req.body);
+    await whmcsCall("DomainUpdateAutoRenew", {
+      domainid: req.params.domainId,
+      autorenew: body.enabled ? "1" : "0",
+    });
+    res.json({ success: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post("/:domainId/idprotection", async (req, res, next) => {
   try {
     const { enable } = req.body as { enable?: boolean };

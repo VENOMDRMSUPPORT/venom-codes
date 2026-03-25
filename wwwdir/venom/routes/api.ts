@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import rateLimit from "express-rate-limit";
+import { config } from "../backend/src/config.js";
+import { requireAdminKey } from "../backend/src/middlewares/admin.middleware.js";
 import healthRouter from "../backend/src/routes/health.js";
 import authRouter from "../backend/src/routes/auth.routes.js";
 import clientRouter from "../backend/src/routes/client.routes.js";
@@ -56,13 +58,16 @@ export function registerApiRoutes(app: Express): void {
   app.use("/api/billing", billingRouter);
   app.use("/api/promotions", promotionsRouter);
   app.use("/api/affiliates", affiliatesRouter);
-  app.use("/api/admin", adminRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/todo", todoRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/oauth", oauthRouter);
-  app.use("/api/notifications", notificationsRouter);
   app.use("/api/ssl", sslRouter);
-  app.use("/api/modules", modulesRouter);
-  app.use("/api/system", systemRouter);
+
+  if (config.VENOM_ADMIN_API_KEY) {
+    app.use("/api/admin", requireAdminKey, adminRouter);
+    app.use("/api/system", requireAdminKey, systemRouter);
+    app.use("/api/modules", requireAdminKey, modulesRouter);
+    app.use("/api/notifications", requireAdminKey, notificationsRouter);
+  }
 }

@@ -1,6 +1,10 @@
+/**
+ * Catalog — register static segments (`/groups`, `/pricing`) before `/:productId`.
+ */
 import { Router, type IRouter } from "express";
 import { whmcsCall } from "../lib/whmcs-client.js";
 import { queryToWhmcsParams } from "../lib/query-params.js";
+import { mapProductsCatalog } from "../lib/whmcs-transforms.js";
 
 const router: IRouter = Router();
 
@@ -10,7 +14,7 @@ router.get("/", async (req, res, next) => {
     const result = await whmcsCall<Record<string, unknown>>("GetProducts", {
       ...queryToWhmcsParams(req.query),
     });
-    res.json(result);
+    res.json({ products: mapProductsCatalog(result) });
   } catch (e) {
     next(e);
   }
@@ -29,6 +33,16 @@ router.get("/groups", async (req, res, next) => {
       order: Number(g.order ?? 0),
     }));
     res.json({ groups: mapped });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /products/pricing - Get TLD/domain pricing */
+router.get("/pricing", async (req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("GetTLDPricing", {});
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -62,18 +76,21 @@ router.get("/:productId/addons", async (req, res, next) => {
     const products = result.products as { product?: unknown } | undefined;
     const raw = products?.product;
     const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
-    const addons = (list[0] as Record<string, unknown>)?.addons;
-    res.json({ addons: addons ?? [] });
-  } catch (e) {
-    next(e);
-  }
-});
-
-/** GET /products/pricing - Get TLD/domain pricing */
-router.get("/pricing", async (req, res, next) => {
-  try {
-    const result = await whmcsCall<Record<string, unknown>>("GetTLDPricing", {});
-    res.json(result);
+    const rawAddons = (list[0] as Record<string, unknown>)?.addons;
+    const addonArr = Array.isArray(rawAddons)
+      ? rawAddons
+      : rawAddons && typeof rawAddons === "object"
+        ? Object.values(rawAddons as object)
+        : [];
+    const addons = (addonArr as Record<string, unknown>[]).map((a) => ({
+      id: String(a.id ?? a.addonid ?? ""),
+      name: String(a.name ?? ""),
+      pricing:
+        a.pricing && typeof a.pricing === "object"
+          ? (a.pricing as Record<string, unknown>)
+          : {},
+    }));
+    res.json({ addons });
   } catch (e) {
     next(e);
   }

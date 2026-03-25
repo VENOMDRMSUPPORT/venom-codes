@@ -6,14 +6,21 @@ import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router: IRouter = Router();
 
-/** GET /billing/cycles - Get available billing cycles */
-router.get("/cycles", async (_req, res, next) => {
-  try {
-    const result = await whmcsCall<Record<string, unknown>>("GetBillingCycles", {});
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
+/** WHMCS-standard billing cycle labels (no dedicated GetBillingCycles External API action). */
+const WHMCS_BILLING_CYCLES = [
+  "Free Account",
+  "One Time",
+  "Monthly",
+  "Quarterly",
+  "Semi-Annually",
+  "Annually",
+  "Biennially",
+  "Triennially",
+];
+
+/** GET /billing/cycles — static list aligned with WHMCS product cycle names */
+router.get("/cycles", (_req, res) => {
+  res.json({ cycles: WHMCS_BILLING_CYCLES, source: "static" });
 });
 
 /** GET /billing/currencies - Get supported currencies */
@@ -26,7 +33,10 @@ router.get("/currencies", async (_req, res, next) => {
   }
 });
 
-/** GET /billing/gateways - Get available payment gateways */
+/**
+ * GET /billing/gateways — active payment gateways (WHMCS GetPaymentMethods).
+ * For stored client pay methods use GET /api/paymethods (GetPayMethods).
+ */
 router.get("/gateways", async (_req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetPaymentMethods", {});

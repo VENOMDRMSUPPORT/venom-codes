@@ -83,11 +83,15 @@ router.put("/:todoId", requireAuth, async (req, res, next) => {
   }
 });
 
-/** DELETE /todo/:todoId - Delete todo item */
+/**
+ * DELETE /todo/:todoId — maps to UpdateToDoItem (no DeleteToDoItem in WHMCS API index).
+ * Marks the item completed per typical admin workflow.
+ */
 router.delete("/:todoId", requireAuth, async (req, res, next) => {
   try {
-    await whmcsCall("DeleteToDoItem", {
+    await whmcsCall("UpdateToDoItem", {
       itemid: req.params.todoId,
+      status: "Completed",
     });
     res.json({ success: true });
   } catch (e) {

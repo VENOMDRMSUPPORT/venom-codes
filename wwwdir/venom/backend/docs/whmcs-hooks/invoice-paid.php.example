@@ -1,0 +1,39 @@
+<?php
+/**
+ * WHMCS hook: Invoice Paid → notify Venom API (copy to includes/hooks/ and rename to invoice_paid.php).
+ * Set VENOM_WEBHOOK_URL and VENOM_WEBHOOK_SECRET to match the Node server.
+ */
+if (!defined("WHMCS")) {
+    exit("This file cannot be accessed directly");
+}
+
+add_hook("InvoicePaid", 1, function (array $vars) {
+    $invoiceId = (int) ($vars["invoiceid"] ?? 0);
+    $url = getenv("VENOM_WEBHOOK_URL") ?: "";
+    $secret = getenv("VENOM_WEBHOOK_SECRET") ?: "";
+    if ($url === "" || $secret === "" || $invoiceId < 1) {
+        return;
+    }
+
+    $payload = json_encode([
+        "hook" => "InvoicePaid",
+        "invoiceid" => $invoiceId,
+        "time" => time(),
+    ], JSON_UNESCAPED_SLASHES);
+
+    $sig = hash_hmac("sha256", $payload, $secret);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            "Content-Type: application/json",
+            "X-Whmcs-Signature: " . $sig,
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 5,
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+});

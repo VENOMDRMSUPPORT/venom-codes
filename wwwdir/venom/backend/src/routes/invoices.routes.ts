@@ -15,7 +15,12 @@ router.get("/", async (req, res, next) => {
       ...queryToWhmcsParams(req.query),
     });
     const invoices = mapInvoicesResponse(result);
-    res.json({ invoices });
+    const totalRaw = result.totalresults ?? result.totalResults;
+    const total =
+      typeof totalRaw === "string" || typeof totalRaw === "number"
+        ? Number(totalRaw)
+        : invoices.length;
+    res.json({ invoices, total });
   } catch (e) {
     next(e);
   }

@@ -607,10 +607,10 @@ function ProductCard({ product }: {
 }
 
 export function Catalog() {
-  const { data: products, isLoading, isError, refetch } = useGetProducts();
+  const { data: catalog, isLoading, isError, refetch } = useGetProducts();
   const [search, setSearch] = useState("");
 
-  const filtered = (products ?? []).filter(
+  const filtered = (catalog?.products ?? []).filter(
     (p) =>
       !search ||
       p.name.toLowerCase().includes(search.toLowerCase()) ||

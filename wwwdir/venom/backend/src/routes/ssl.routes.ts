@@ -1,11 +1,25 @@
 import { Router, type IRouter } from "express";
+import { config } from "../config.js";
 import { whmcsCall } from "../lib/whmcs-client.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router: IRouter = Router();
 
+router.use(requireAuth);
+router.use((_req, res, next) => {
+  if (!config.VENOM_ENABLE_SSL_API) {
+    res.status(501).json({
+      error: "not_implemented",
+      message:
+        "SSL certificate API routes are disabled. Set VENOM_ENABLE_SSL_API=true after verifying GetSsl/CreateSslOrder and related actions for your WHMCS version.",
+    });
+    return;
+  }
+  next();
+});
+
 /** GET /ssl - Get SSL certificates for client */
-router.get("/", requireAuth, async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const params: Record<string, string> = { clientid: req.clientId! };
     if (req.query.limitstart) params.limitstart = String(req.query.limitstart);
@@ -19,7 +33,7 @@ router.get("/", requireAuth, async (req, res, next) => {
 });
 
 /** GET /ssl/:certId - Get specific SSL certificate */
-router.get("/:certId", requireAuth, async (req, res, next) => {
+router.get("/:certId", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("GetSsl", {
       certificateid: req.params.certId,
@@ -31,7 +45,7 @@ router.get("/:certId", requireAuth, async (req, res, next) => {
 });
 
 /** POST /ssl - Create new SSL certificate order */
-router.post("/", requireAuth, async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     const { 
       certtype, 
@@ -73,7 +87,7 @@ router.post("/", requireAuth, async (req, res, next) => {
 });
 
 /** PUT /ssl/:certId - Update SSL certificate */
-router.put("/:certId", requireAuth, async (req, res, next) => {
+router.put("/:certId", async (req, res, next) => {
   try {
     const { csr, webserverType } = req.body as {
       csr?: string;
@@ -96,7 +110,7 @@ router.put("/:certId", requireAuth, async (req, res, next) => {
 });
 
 /** POST /ssl/:certId/resend - Resend SSL certificate email */
-router.post("/:certId/resend", requireAuth, async (req, res, next) => {
+router.post("/:certId/resend", async (req, res, next) => {
   try {
     const result = await whmcsCall<Record<string, unknown>>("ResendSslEmail", {
       certificateid: req.params.certId,
@@ -111,7 +125,7 @@ router.post("/:certId/resend", requireAuth, async (req, res, next) => {
 });
 
 /** POST /ssl/:certId/renew - Renew SSL certificate */
-router.post("/:certId/renew", requireAuth, async (req, res, next) => {
+router.post("/:certId/renew", async (req, res, next) => {
   try {
     const { years } = req.body as { years?: number };
     const result = await whmcsCall<Record<string, unknown>>("RenewSsl", {
@@ -128,7 +142,7 @@ router.post("/:certId/renew", requireAuth, async (req, res, next) => {
 });
 
 /** POST /ssl/:certId/complete - Complete SSL certificate setup */
-router.post("/:certId/complete", requireAuth, async (req, res, next) => {
+router.post("/:certId/complete", async (req, res, next) => {
   try {
     const { crt, caBundle } = req.body as { crt?: string; caBundle?: string };
     const result = await whmcsCall<Record<string, unknown>>("CompleteSsl", {

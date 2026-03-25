@@ -101,16 +101,13 @@ router.put("/:projectId", requireAuth, async (req, res, next) => {
   }
 });
 
-/** DELETE /projects/:projectId - Delete project */
-router.delete("/:projectId", requireAuth, async (req, res, next) => {
-  try {
-    await whmcsCall("DeleteProject", {
-      projectid: req.params.projectId,
-    });
-    res.json({ success: true });
-  } catch (e) {
-    next(e);
-  }
+/** DELETE /projects/:projectId — WHMCS has no DeleteProject External API action */
+router.delete("/:projectId", requireAuth, async (_req, res) => {
+  res.status(501).json({
+    error: "not_implemented",
+    message:
+      "WHMCS External API does not expose DeleteProject. Use UpdateProject or DeleteProjectTask.",
+  });
 });
 
 /** GET /projects/:projectId/tasks - Get project tasks */

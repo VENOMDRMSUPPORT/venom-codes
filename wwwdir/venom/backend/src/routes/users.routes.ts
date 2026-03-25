@@ -1,7 +1,9 @@
+/**
+ * Users — static `GET /permissions-list` before `/:userId`.
+ */
 import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { whmcsCall } from "../lib/whmcs-client.js";
-import { queryToWhmcsParams } from "../lib/query-params.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router: IRouter = Router();
@@ -14,7 +16,7 @@ router.get("/", requireAuth, async (req, res, next) => {
     if (req.query.limitnum) params.limitnum = String(req.query.limitnum);
     if (req.query.orderby) params.orderby = String(req.query.orderby);
     if (req.query.sort) params.sort = String(req.query.sort);
-    
+
     const result = await whmcsCall<Record<string, unknown>>("GetUsers", params);
     const users = result.users as { user?: unknown } | undefined;
     const raw = users?.user;
@@ -28,6 +30,16 @@ router.get("/", requireAuth, async (req, res, next) => {
       createdAt: u.created_at ?? u.createdat ?? null,
     }));
     res.json({ users: mapped });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** GET /users/permissions-list - Get available permissions */
+router.get("/permissions-list", requireAuth, async (_req, res, next) => {
+  try {
+    const result = await whmcsCall<Record<string, unknown>>("GetPermissionsList", {});
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -93,7 +105,7 @@ router.put("/:userId", requireAuth, async (req, res, next) => {
     if (typeof body.firstname === "string") params.firstname = body.firstname;
     if (typeof body.lastname === "string") params.lastname = body.lastname;
     if (typeof body.email === "string") params.email = body.email;
-    
+
     await whmcsCall("UpdateUser", params);
     res.json({ success: true });
   } catch (e) {
@@ -169,16 +181,6 @@ router.put("/:userId/permissions", requireAuth, async (req, res, next) => {
       permissions: permissions.join(","),
     });
     res.json({ success: true });
-  } catch (e) {
-    next(e);
-  }
-});
-
-/** GET /users/permissions-list - Get available permissions */
-router.get("/permissions-list", requireAuth, async (_req, res, next) => {
-  try {
-    const result = await whmcsCall<Record<string, unknown>>("GetPermissionsList", {});
-    res.json(result);
   } catch (e) {
     next(e);
   }
