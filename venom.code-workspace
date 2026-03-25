@@ -30,7 +30,7 @@
 			".oh-my-zsh": true,
 			".qwen": true,
 			".gemini": true,
-			"AGENTS.md": true,
+			"AGENTS.md": false,
 			".bashrc": true,
 			"kilo.json": true,
 			".zshenv": true,

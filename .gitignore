@@ -6,6 +6,9 @@
 # Keep Git metadata and this file
 !.gitignore
 
+# Keep AGENTS.md
+!AGENTS.md
+
 # Keep selected project folders
 !backend/
 !backend/**
