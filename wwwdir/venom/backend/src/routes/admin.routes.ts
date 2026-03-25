@@ -1,8 +1,12 @@
 import { Router, type IRouter } from "express";
 import { whmcsCall } from "../lib/whmcs-client.js";
 import { queryToWhmcsParams } from "../lib/query-params.js";
+import { requireAdminKey } from "../middlewares/admin.middleware.js";
 
 const router: IRouter = Router();
+
+// Protect all admin routes with X-Admin-Key header
+router.use(requireAdminKey);
 
 /** GET /admin/activity - Get activity log */
 router.get("/activity", async (req, res, next) => {

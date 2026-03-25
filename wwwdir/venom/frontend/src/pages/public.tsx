@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link, useRoute, useLocation } from "wouter";
+import React, { useState } from "react"; // React
+// DOMPurify import for sanitizing HTML content
+import { Link, useRoute, useLocation } from "wouter"; // router
 import {
   useGetAnnouncements,
   useGetAnnouncement,

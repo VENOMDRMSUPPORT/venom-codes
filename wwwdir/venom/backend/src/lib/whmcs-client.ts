@@ -43,6 +43,7 @@ export async function whmcsCall<T = Record<string, unknown>>(
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
+    signal: AbortSignal.timeout(30000), // 30 second timeout
   });
 
   const json = (await res.json()) as Record<string, unknown>;

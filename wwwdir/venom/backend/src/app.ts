@@ -1,8 +1,3 @@
-// Allow self-signed certificates in development (Laravel Valet, etc.)
-if (process.env.NODE_ENV === "development") {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
-
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -45,6 +40,19 @@ export function createApp(): express.Application {
   });
 
   app.use(globalLimiter);
+
+  // Stricter rate limiting for auth endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "too_many_requests", message: "Too many login attempts. Please try again later." },
+  });
+
+  app.use("/api/auth/login", authLimiter);
+  app.use("/api/auth/register", authLimiter);
+  app.use("/api/auth/forgot-password", authLimiter);
 
   registerApiRoutes(app);
   registerWebRoutes(app);

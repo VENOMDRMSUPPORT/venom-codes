@@ -378,21 +378,30 @@ export function InvoiceDetail() {
                 </tr>
               </thead>
               <tbody>
-                {(inv.items ?? []).length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="px-5 py-6 text-center text-muted-foreground text-sm">No line items</td>
-                  </tr>
-                ) : (
-                  (inv.items ?? []).map((item) => (
-                    <tr key={item.id} className="border-b border-white/5">
-                      <td className="px-5 py-3.5 text-white">
-                        {item.description}
-                        {item.taxed && <span className="ml-2 text-xs text-muted-foreground">(taxed)</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-white font-mono text-right">${item.amount}</td>
+                {(() => {
+                  // WHMCS returns items as object keyed by ID, not array
+                  const rawItems = inv.items as Record<string, { id?: string; description?: string; amount?: string; taxed?: boolean }> | undefined;
+                  const items = rawItems
+                    ? Array.isArray(rawItems)
+                      ? rawItems
+                      : Object.values(rawItems)
+                    : [];
+                  return items.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="px-5 py-6 text-center text-muted-foreground text-sm">No line items</td>
                     </tr>
-                  ))
-                )}
+                  ) : (
+                    items.map((item, idx) => (
+                      <tr key={item.id ?? idx} className="border-b border-white/5">
+                        <td className="px-5 py-3.5 text-white">
+                          {item.description}
+                          {item.taxed && <span className="ml-2 text-xs text-muted-foreground">(taxed)</span>}
+                        </td>
+                        <td className="px-5 py-3.5 text-white font-mono text-right">${item.amount}</td>
+                      </tr>
+                    ))
+                  );
+                })()}
               </tbody>
             </table>
             {/* Totals */}

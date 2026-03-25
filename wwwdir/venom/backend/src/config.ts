@@ -22,6 +22,12 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === "true" || v === "1"),
+  /** Database connection settings */
+  DB_HOST: z.string().default("127.0.0.1"),
+  DB_PORT: z.coerce.number().default(3306),
+  DB_USER: z.string().default("admin"),
+  DB_PASSWORD: z.string().default(""),
+  DB_NAME: z.string().default("whmcs"),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
@@ -39,6 +45,11 @@ function loadConfig(): AppConfig {
     VENOM_ADMIN_API_KEY: process.env.VENOM_ADMIN_API_KEY || undefined,
     VENOM_WEBHOOK_SECRET: process.env.VENOM_WEBHOOK_SECRET || undefined,
     VENOM_ENABLE_SSL_API: process.env.VENOM_ENABLE_SSL_API,
+    DB_HOST: process.env.DB_HOST,
+    DB_PORT: process.env.DB_PORT,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_NAME,
   });
 
   if (!parsed.success) {

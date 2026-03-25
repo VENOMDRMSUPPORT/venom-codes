@@ -1,18 +1,19 @@
-import mysql from "mysql2/promise";
+import mysql, { type RowDataPacket } from "mysql2/promise";
+import { config } from "../config.js";
 
 const pool = mysql.createPool({
-  host: "127.0.0.1",
-  port: 7999,
-  user: "admin",
-  password: "habiba77Hm",
-  database: "whmcs",
+  host: config.DB_HOST,
+  port: config.DB_PORT,
+  user: config.DB_USER,
+  password: config.DB_PASSWORD,
+  database: config.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   multipleStatements: false,
 });
 
-export interface KbCategory {
+export interface KbCategory extends RowDataPacket {
   id: number;
   parentid: number;
   name: string;
@@ -21,7 +22,7 @@ export interface KbCategory {
   language: string;
 }
 
-export interface KbArticle {
+export interface KbArticle extends RowDataPacket {
   id: number;
   title: string;
   article: string;
@@ -35,9 +36,9 @@ export interface KbArticle {
 }
 
 export async function getKbCategories(): Promise<KbCategory[]> {
-  const [rows] = await pool.query<
-    KbCategory[]
-  >("SELECT id, parentid, name, description, hidden, language FROM tblknowledgebasecats WHERE hidden = '' ORDER BY parentid, id");
+  const [rows] = await pool.query<KbCategory[]>(
+    "SELECT id, parentid, name, description, hidden, language FROM tblknowledgebasecats WHERE hidden = '' ORDER BY parentid, id"
+  );
   return rows;
 }
 

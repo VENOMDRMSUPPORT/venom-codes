@@ -49,12 +49,12 @@ module.exports = {
     },
     {
       name: 'frontend-dev',
-      cwd: './frontend',
+      cwd: './',
       script: 'pnpm',
-      args: 'run dev',
+      args: '--filter frontend run dev',
       env: {
         NODE_ENV: 'development',
-        PORT: 18130,
+        PORT: 5173,
       },
       watch: false,
       autorestart: true,

@@ -36,11 +36,13 @@ export default defineConfig({
   },
   server: {
     port,
+    strictPort: true,
     host: "0.0.0.0",
     allowedHosts: ["dev.venom-codes.test", "localhost"],
     hmr: {
-      protocol: "ws",
+      protocol: "wss",
       host: "dev.venom-codes.test",
+      clientPort: 443,
     },
     fs: {
       strict: true,
