@@ -45,7 +45,7 @@ router.post("/login", async (req, res, next) => {
     }>("ValidateLogin", {
       email: body.email,
       password2: body.password,
-    });
+    }, { throwOnError: false });
 
     if (result.result !== "success" || result.userid == null) {
       res.status(401).json({
@@ -91,7 +91,7 @@ router.post("/register", async (req, res, next) => {
       postcode: body.postcode ?? "",
       country: body.country ?? "",
       companyname: body.companyname ?? "",
-    });
+    }, { throwOnError: false });
 
     const loginResult = await whmcsCall<{
       result: string;
@@ -99,7 +99,7 @@ router.post("/register", async (req, res, next) => {
     }>("ValidateLogin", {
       email: body.email,
       password2: body.password,
-    });
+    }, { throwOnError: false });
 
     if (loginResult.result !== "success" || loginResult.userid == null) {
       res.status(201).json({

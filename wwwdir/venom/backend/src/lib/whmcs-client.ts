@@ -29,6 +29,7 @@ export type WhmcsParams = Record<
 export async function whmcsCall<T = Record<string, unknown>>(
   action: string,
   params: WhmcsParams = {},
+  options?: { throwOnError?: boolean },
 ): Promise<T> {
   const base = config.WHMCS_URL.replace(/\/$/, "");
   const url = `${base}/includes/api.php`;
@@ -53,7 +54,10 @@ export async function whmcsCall<T = Record<string, unknown>>(
 
   const json = (await res.json()) as Record<string, unknown>;
 
-  if (json.result === "error") {
+  // Only throw error if throwOnError is true (default for backwards compatibility)
+  // For auth endpoints, we want to return the full response to handle invalid credentials
+  const shouldThrow = options?.throwOnError ?? true;
+  if (json.result === "error" && shouldThrow) {
     throw new WhmcsApiError(
       String(json.message ?? "WHMCS API error"),
       "whmcs_error",

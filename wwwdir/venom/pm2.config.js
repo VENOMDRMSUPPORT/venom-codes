@@ -65,6 +65,24 @@ module.exports = {
       merge_logs: true,
       time: true,
     },
+    {
+      name: 'frontend-v2-dev',
+      cwd: './frontend-v2',
+      script: 'npm',
+      args: 'run dev',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 5174,
+      },
+      watch: false,
+      autorestart: true,
+      max_memory_restart: '512M',
+      log_file: '/home/venom/logs/pm2/frontend-v2-dev.log',
+      error_file: '/home/venom/logs/pm2/frontend-v2-dev-error.log',
+      out_file: '/home/venom/logs/pm2/frontend-v2-dev-out.log',
+      merge_logs: true,
+      time: true,
+    },
     // Production apps
     {
       name: 'backend-prod',
