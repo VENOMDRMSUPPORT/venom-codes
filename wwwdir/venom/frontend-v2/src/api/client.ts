@@ -851,7 +851,19 @@ export function useGetKnowledgebaseCategories(options?: UseQueryOptions<{ catego
 export function useGetKnowledgebaseCategory(categoryId: string, options?: UseQueryOptions<KBCategory, Error>) {
   return useQuery<KBCategory, Error>({
     queryKey: ["knowledgebase", "category", categoryId],
-    queryFn: () => customFetch<KBCategory>(`/knowledgebase/categories/${categoryId}`),
+    queryFn: async () => {
+      const response = await customFetch<{ category: KBCategory | null; articles: KBArticle[] }>(
+        `/knowledgebase/categories/${categoryId}`,
+      );
+      if (!response.category) {
+        throw new Error("Category not found");
+      }
+      return {
+        ...response.category,
+        articles: response.articles ?? [],
+        articleCount: response.articles?.length ?? response.category.articleCount,
+      };
+    },
     enabled: !!categoryId,
     ...options,
   });
@@ -860,7 +872,15 @@ export function useGetKnowledgebaseCategory(categoryId: string, options?: UseQue
 export function useGetKnowledgebaseArticle(categoryId: string, articleId: string, options?: UseQueryOptions<KBArticle, Error>) {
   return useQuery<KBArticle, Error>({
     queryKey: ["knowledgebase", "category", categoryId, "article", articleId],
-    queryFn: () => customFetch<KBArticle>(`/knowledgebase/categories/${categoryId}/articles/${articleId}`),
+    queryFn: async () => {
+      const response = await customFetch<{ article: KBArticle | null }>(
+        `/knowledgebase/categories/${categoryId}/articles/${articleId}`,
+      );
+      if (!response.article) {
+        throw new Error("Article not found");
+      }
+      return response.article;
+    },
     enabled: !!(categoryId && articleId),
     ...options,
   });
@@ -875,7 +895,7 @@ export function useGetCatalogProducts(params?: { groupId?: number; page?: number
 
   return useQuery<{ products: Product[]; total: number }, Error>({
     queryKey: ["catalog", "products", params],
-    queryFn: () => customFetch<{ products: Product[]; total: number }>(`/catalog/products${queryString}`),
+    queryFn: () => customFetch<{ products: Product[]; total: number }>(`/products${queryString}`),
     staleTime: 10 * 60 * 1000,
     ...options,
   });
@@ -884,7 +904,7 @@ export function useGetCatalogProducts(params?: { groupId?: number; page?: number
 export function useGetCatalogProductDetail(productId: string, options?: UseQueryOptions<Product, Error>) {
   return useQuery<Product, Error>({
     queryKey: ["catalog", "product", productId],
-    queryFn: () => customFetch<Product>(`/catalog/products/${productId}`),
+    queryFn: () => customFetch<Product>(`/products/${productId}`),
     enabled: !!productId,
     ...options,
   });
@@ -893,7 +913,7 @@ export function useGetCatalogProductDetail(productId: string, options?: UseQuery
 export function useGetCatalogProductGroups(options?: UseQueryOptions<{ groups: { id: number; name: string }[] }, Error>) {
   return useQuery<{ groups: { id: number; name: string }[] }, Error>({
     queryKey: ["catalog", "groups"],
-    queryFn: () => customFetch<{ groups: { id: number; name: string }[] }>("/catalog/groups"),
+    queryFn: () => customFetch<{ groups: { id: number; name: string }[] }>("/products/groups"),
     staleTime: 30 * 60 * 1000, // 30 minutes
     ...options,
   });

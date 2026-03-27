@@ -1,5 +1,6 @@
 import mysql, { type RowDataPacket } from "mysql2/promise";
 import { config } from "../config.js";
+import bcrypt from "bcryptjs";
 
 /**
  * MySQL connection pool configuration.
@@ -102,8 +103,13 @@ export async function getKbCategory(categoryId: string): Promise<{
   }
 
   const [articles] = await pool.query<KbArticle[]>(
-    "SELECT id, title, article, views, useful, votes, private, `order`, parentid, language FROM tblknowledgebase WHERE parentid = ? AND private = '' ORDER BY `order`",
-    [id]
+    `SELECT kb.id, kb.title, kb.article, kb.views, kb.useful, kb.votes, kb.private, kb.\`order\`, kb.parentid, kb.language
+     FROM tblknowledgebase kb
+     LEFT JOIN tblknowledgebaselinks kbl ON kbl.articleid = kb.id
+     WHERE kb.private = '' AND (kb.parentid = ? OR kbl.categoryid = ?)
+     GROUP BY kb.id
+     ORDER BY kb.\`order\`, kb.id`,
+    [id, id]
   );
 
   return { category: categories[0], articles };
@@ -126,8 +132,12 @@ export async function getKbArticle(categoryId: string, articleId: string): Promi
   );
 
   const [articles] = await pool.query<KbArticle[]>(
-    "SELECT id, title, article, views, useful, votes, private, `order`, parentid, language FROM tblknowledgebase WHERE id = ? AND parentid = ? AND private = ''",
-    [artId, catId]
+    `SELECT kb.id, kb.title, kb.article, kb.views, kb.useful, kb.votes, kb.private, kb.\`order\`, kb.parentid, kb.language
+     FROM tblknowledgebase kb
+     LEFT JOIN tblknowledgebaselinks kbl ON kbl.articleid = kb.id
+     WHERE kb.id = ? AND kb.private = '' AND (kb.parentid = ? OR kbl.categoryid = ?)
+     GROUP BY kb.id`,
+    [artId, catId, catId]
   );
 
   return {
@@ -154,14 +164,95 @@ export async function getKbIndex(): Promise<{
   const [rows] = await pool.query<
     (KbCategory & { articleCount: number })[]
   >(`
-    SELECT c.id, c.parentid, c.name, c.description, c.hidden, c.language, COUNT(a.id) as articleCount
+    SELECT c.id, c.parentid, c.name, c.description, c.hidden, c.language,
+           (
+             SELECT COUNT(DISTINCT kb.id)
+             FROM tblknowledgebase kb
+             LEFT JOIN tblknowledgebaselinks kbl ON kbl.articleid = kb.id
+             WHERE kb.private = '' AND (kb.parentid = c.id OR kbl.categoryid = c.id)
+           ) AS articleCount
     FROM tblknowledgebasecats c
-    LEFT JOIN tblknowledgebase a ON a.parentid = c.id AND a.private = ''
     WHERE c.hidden = ''
-    GROUP BY c.id
     ORDER BY c.parentid, c.id
   `);
   return { categories: rows };
+}
+
+// Auth-related interfaces
+export interface WhmcsUser extends RowDataPacket {
+  id: number;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  email_verified_at: Date | null;
+}
+
+export interface WhmcsClient extends RowDataPacket {
+  id: number;
+  firstname: string;
+  lastname: string;
+  email: string;
+  companyname?: string;
+  phonenumber?: string;
+  address1?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  country?: string;
+  currency: number;
+  defaultgateway?: string;
+  credit?: number;
+  datecreated: string;
+  status: string;
+}
+
+/**
+ * Direct database authentication for WHMCS users.
+ * Bypasses WHMCS ValidateLogin API which may have issues in some versions.
+ *
+ * @param email - User email address
+ * @param password - Plain text password
+ * @returns User and client data if credentials are valid, null otherwise
+ */
+export async function authenticateUser(
+  email: string,
+  password: string
+): Promise<{ user: WhmcsUser; client: WhmcsClient } | null> {
+  // Get user from tblusers
+  const [users] = await pool.query<WhmcsUser[]>(
+    "SELECT id, email, password, first_name, last_name, email_verified_at FROM tblusers WHERE email = ?",
+    [email]
+  );
+
+  if (users.length === 0) {
+    return null;
+  }
+
+  const user = users[0];
+
+  // Verify password using bcrypt
+  const passwordValid = await bcrypt.compare(password, user.password);
+  if (!passwordValid) {
+    return null;
+  }
+
+  // Get associated client from tblclients
+  const [clients] = await pool.query<WhmcsClient[]>(
+    `SELECT c.id, c.firstname, c.lastname, c.email, c.companyname, c.phonenumber,
+            c.address1, c.city, c.state, c.postcode, c.country, c.currency,
+            c.defaultgateway, c.credit, c.datecreated, c.status
+     FROM tblclients c
+     INNER JOIN tblusers_clients uc ON c.id = uc.client_id
+     WHERE uc.auth_user_id = ?`,
+    [user.id]
+  );
+
+  if (clients.length === 0) {
+    return null;
+  }
+
+  return { user, client: clients[0] };
 }
 
 export default pool;

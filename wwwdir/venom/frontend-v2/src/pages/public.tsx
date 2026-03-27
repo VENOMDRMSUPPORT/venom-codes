@@ -8,6 +8,69 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
+type BillingCycle =
+  | "monthly"
+  | "quarterly"
+  | "semiannually"
+  | "annually"
+  | "biennially"
+  | "triennially";
+
+const BILLING_CYCLE_ORDER: BillingCycle[] = [
+  "monthly",
+  "quarterly",
+  "semiannually",
+  "annually",
+  "biennially",
+  "triennially",
+];
+
+const BILLING_CYCLE_LABEL: Record<BillingCycle, string> = {
+  monthly: "mo",
+  quarterly: "qtr",
+  semiannually: "6mo",
+  annually: "yr",
+  biennially: "2yr",
+  triennially: "3yr",
+};
+
+function resolveCatalogPricing(pricing: unknown): { price: string; cycle?: string } {
+  if (!pricing || typeof pricing !== "object") {
+    return { price: "Contact us" };
+  }
+
+  const currencies = Object.values(pricing as Record<string, unknown>);
+  const firstCurrency = currencies.find(
+    (value): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value),
+  );
+
+  if (!firstCurrency) {
+    return { price: "Contact us" };
+  }
+
+  const prefix = typeof firstCurrency.prefix === "string" ? firstCurrency.prefix : "$";
+
+  for (const cycle of BILLING_CYCLE_ORDER) {
+    const rawValue = firstCurrency[cycle];
+    const numeric =
+      typeof rawValue === "number"
+        ? rawValue
+        : typeof rawValue === "string"
+          ? Number(rawValue)
+          : Number.NaN;
+
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return {
+        price: `${prefix}${numeric.toFixed(2)}`,
+        cycle: BILLING_CYCLE_LABEL[cycle],
+      };
+    }
+  }
+
+  return { price: "Contact us" };
+}
+
 // --- ANNOUNCEMENTS ---
 export function AnnouncementsList() {
   const { data, isLoading, isError } = useGetAnnouncements();
@@ -463,13 +526,26 @@ export function Catalog() {
                 transition={{ delay: i * 0.1 }}
                 className="rounded-2xl bg-card border border-border p-6 hover:border-primary/30 transition-all"
               >
+                {/*
+                  WHMCS pricing comes as nested currency objects (e.g. pricing.USD.monthly).
+                  Resolve the first available non-zero cycle for compact card display.
+                */}
+                {(() => {
+                  const displayPricing = resolveCatalogPricing(product.pricing);
+                  return (
+                    <>
                 <h3 className="text-xl font-bold mb-2">{product.name}</h3>
                 <p className="text-muted-foreground text-sm mb-4">{product.description}</p>
                 <div className="mb-4">
-                  <span className="text-3xl font-black text-primary">{product.price}</span>
-                  <span className="text-muted-foreground">/{product.cycle}</span>
+                  <span className="text-3xl font-black text-primary">{displayPricing.price}</span>
+                  {displayPricing.cycle && (
+                    <span className="text-muted-foreground">/{displayPricing.cycle}</span>
+                  )}
                 </div>
                 <Button className="w-full rounded-xl">Add to Cart</Button>
+                    </>
+                  );
+                })()}
               </motion.div>
             ))}
           </div>

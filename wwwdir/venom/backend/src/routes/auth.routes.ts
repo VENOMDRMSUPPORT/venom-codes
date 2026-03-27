@@ -4,6 +4,7 @@ import { whmcsCall } from "../lib/whmcs-client.js";
 import { signToken, verifyToken } from "../lib/jwt.js";
 import { mapWhmcsClientToProfile } from "../lib/whmcs-transforms.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { authenticateUser, type WhmcsClient } from "../lib/db.js";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,34 +39,31 @@ const router: IRouter = Router();
 router.post("/login", async (req, res, next) => {
   try {
     const body = loginSchema.parse(req.body);
-    const result = await whmcsCall<{
-      result: string;
-      userid?: string | number;
-      message?: string;
-    }>("ValidateLogin", {
-      email: body.email,
-      password2: body.password,
-    }, { throwOnError: false });
 
-    if (result.result !== "success" || result.userid == null) {
+    // Try direct database authentication first (bypasses WHMCS ValidateLogin issues)
+    const authResult = await authenticateUser(body.email, body.password);
+
+    if (!authResult) {
       res.status(401).json({
         error: "invalid_credentials",
-        message: result.message ?? "Invalid email or password",
+        message: "Invalid email or password",
       });
       return;
     }
 
-    const clientId = String(result.userid);
+    const { user, client: whmcsClient } = authResult;
+
+    // Get full client details from WHMCS API
     const details = await whmcsCall<Record<string, unknown>>(
       "GetClientsDetails",
       {
-        clientid: clientId,
+        clientid: String(whmcsClient.id),
         stats: false,
       },
     );
 
     const client = mapWhmcsClientToProfile(details);
-    const token = signToken({ sub: clientId });
+    const token = signToken({ sub: String(whmcsClient.id) });
     res.json({ token, client });
   } catch (e) {
     next(e);
@@ -79,7 +77,10 @@ router.post("/logout", requireAuth, (_req, res) => {
 router.post("/register", async (req, res, next) => {
   try {
     const body = registerSchema.parse(req.body);
-    await whmcsCall("AddClient", {
+    const addClientResult = await whmcsCall<{
+      result: string;
+      message?: string;
+    }>("AddClient", {
       firstname: body.firstname,
       lastname: body.lastname,
       email: body.email,
@@ -92,6 +93,14 @@ router.post("/register", async (req, res, next) => {
       country: body.country ?? "",
       companyname: body.companyname ?? "",
     }, { throwOnError: false });
+
+    if (addClientResult.result !== "success") {
+      res.status(400).json({
+        error: "registration_failed",
+        message: String(addClientResult.message ?? "Unable to create account"),
+      });
+      return;
+    }
 
     const loginResult = await whmcsCall<{
       result: string;
